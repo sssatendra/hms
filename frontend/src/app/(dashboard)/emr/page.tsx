@@ -7,6 +7,8 @@ import { coreApi } from '@/lib/api';
 import { formatDateTime, cn } from '@/lib/utils';
 import { SkeletonTable } from '@/components/shared/skeleton';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { Portal } from '@/components/shared/portal';
 import AddEncounterModal from '@/components/emr/AddEncounterModal';
 import AddPrescriptionModal from '@/components/emr/AddPrescriptionModal';
 
@@ -16,6 +18,7 @@ function EMRPage() {
   const [page, setPage] = useState(1);
   const [showEncounterModal, setShowEncounterModal] = useState(false);
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string, type: 'note' | 'rx' } | null>(null);
   const queryClient = useQueryClient();
 
   const { data: notesData, isLoading: notesLoading } = useQuery({
@@ -187,7 +190,7 @@ function EMRPage() {
                       <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
                         <button className="p-2 hover:bg-muted rounded-lg text-muted-foreground"><ChevronRight className="h-4 w-4" /></button>
                         <button
-                          onClick={() => { if (confirm('Delete this record Permanentely?')) deleteNoteMutation.mutate(note.id || note._id); }}
+                          onClick={() => setConfirmDelete({ id: note.id || note._id, type: 'note' })}
                           className="p-2 hover:bg-red-50 text-red-400 hover:text-red-600 rounded-lg transition-all"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -258,7 +261,7 @@ function EMRPage() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <button
-                          onClick={() => { if (confirm('Voids this prescription Record?')) deleteRXMutation.mutate(rx.id); }}
+                          onClick={() => setConfirmDelete({ id: rx.id, type: 'rx' })}
                           className="p-2 hover:bg-red-50 text-red-400 hover:text-red-600 rounded-lg transition-all opacity-0 group-hover/row:opacity-100"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -274,12 +277,35 @@ function EMRPage() {
       </div>
 
       {showEncounterModal && (
-        <AddEncounterModal onClose={() => setShowEncounterModal(false)} />
+        <Portal>
+          <AddEncounterModal onClose={() => setShowEncounterModal(false)} />
+        </Portal>
       )}
 
       {showPrescriptionModal && (
-        <AddPrescriptionModal onClose={() => setShowPrescriptionModal(false)} />
+        <Portal>
+          <AddPrescriptionModal onClose={() => setShowPrescriptionModal(false)} />
+        </Portal>
       )}
+
+      <ConfirmDialog
+        isOpen={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => {
+          if (confirmDelete?.type === 'note') {
+            deleteNoteMutation.mutate(confirmDelete.id);
+          } else if (confirmDelete?.type === 'rx') {
+            deleteRXMutation.mutate(confirmDelete.id);
+          }
+          setConfirmDelete(null);
+        }}
+        title={confirmDelete?.type === 'note' ? 'Delete Clinical Record' : 'Void Prescription'}
+        description={confirmDelete?.type === 'note'
+          ? 'Are you sure you want to delete this clinical record permanently? This action cannot be undone.'
+          : 'Are you sure you want to void this prescription? This will mark it as cancelled and it cannot be dispensed.'}
+        confirmText={confirmDelete?.type === 'note' ? 'Delete Record' : 'Void Prescription'}
+        isLoading={deleteNoteMutation.isPending || deleteRXMutation.isPending}
+      />
     </div>
   );
 }

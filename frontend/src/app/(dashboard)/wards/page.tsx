@@ -13,6 +13,8 @@ import { useAuthStore } from '@/lib/auth-store';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useForm } from 'react-hook-form';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { Portal } from '@/components/shared/portal';
 
 export default function WardsPage() {
     const [selectedWard, setSelectedWard] = useState<string | null>(null);
@@ -21,6 +23,7 @@ export default function WardsPage() {
     const [showEditWardModal, setShowEditWardModal] = useState<any>(null);
     const [showTransferModal, setShowTransferModal] = useState<{ admissionId: string, currentBed: string } | null>(null);
     const [showAdmissionDetail, setShowAdmissionDetail] = useState<string | null>(null);
+    const [confirmAction, setConfirmAction] = useState<{ type: 'decommission' | 'discharge' | 'delete-charge', id: string, extra?: any } | null>(null);
     const queryClient = useQueryClient();
 
     const { data: wards, isLoading } = useQuery({
@@ -71,6 +74,12 @@ export default function WardsPage() {
             queryClient.invalidateQueries({ queryKey: ['wards'] });
             queryClient.invalidateQueries({ queryKey: ['active-admissions'] });
         }
+    });
+
+    const deleteChargeMutation = useMutation({
+        mutationFn: async ({ admissionId, chargeId }: { admissionId: string, chargeId: string }) =>
+            api.delete(`/wards/admissions/${admissionId}/charges/${chargeId}`),
+        onSuccess: (_, variables) => queryClient.invalidateQueries({ queryKey: ['admission', variables.admissionId] })
     });
 
     if (isLoading) {
@@ -136,11 +145,7 @@ export default function WardsPage() {
                                             <Settings className="h-3.5 w-3.5" />
                                         </button>
                                         <button
-                                            onClick={() => {
-                                                if (confirm(`Are you sure you want to decommission ${ward.name}?`)) {
-                                                    deleteWardMutation.mutate(ward.id);
-                                                }
-                                            }}
+                                            onClick={() => setConfirmAction({ type: 'decommission', id: ward.id, extra: ward.name })}
                                             className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                                         >
                                             <Trash2 className="h-3.5 w-3.5" />
@@ -198,36 +203,70 @@ export default function WardsPage() {
             </div>
 
             {showCreateWardModal && (
-                <CreateWardModal onClose={() => setShowCreateWardModal(false)} />
+                <Portal>
+                    <CreateWardModal onClose={() => setShowCreateWardModal(false)} />
+                </Portal>
             )}
 
             {showEditWardModal && (
-                <EditWardModal ward={showEditWardModal} onClose={() => setShowEditWardModal(null)} />
-            )}
-
-            {showTransferModal && (
-                <TransferModal
-                    admissionId={showTransferModal.admissionId}
-                    currentBed={showTransferModal.currentBed}
-                    onClose={() => setShowTransferModal(null)}
-                />
+                <Portal>
+                    <EditWardModal ward={showEditWardModal} onClose={() => setShowEditWardModal(null)} />
+                </Portal>
             )}
 
             {showAdmitModal && (
-                <AdmitModal
-                    onClose={() => setShowAdmitModal(false)}
-                    patients={patients}
-                    wards={wards}
-                />
+                <Portal>
+                    <AdmitModal
+                        onClose={() => setShowAdmitModal(false)}
+                        patients={patients}
+                        wards={wards}
+                    />
+                </Portal>
             )}
 
             {showAdmissionDetail && (
-                <AdmissionDetailModal
-                    id={showAdmissionDetail}
-                    onClose={() => setShowAdmissionDetail(null)}
-                    onTransfer={(admissionId, currentBed) => setShowTransferModal({ admissionId, currentBed })}
-                />
+                <Portal>
+                    <AdmissionDetailModal
+                        id={showAdmissionDetail}
+                        onClose={() => setShowAdmissionDetail(null)}
+                        onTransfer={(admissionId, currentBed) => setShowTransferModal({ admissionId, currentBed })}
+                        onConfirmAction={(type, id, extra) => setConfirmAction({ type, id, extra })}
+                    />
+                </Portal>
             )}
+
+            {showTransferModal && (
+                <Portal>
+                    <TransferModal
+                        admissionId={showTransferModal.admissionId}
+                        currentBed={showTransferModal.currentBed}
+                        onClose={() => setShowTransferModal(null)}
+                    />
+                </Portal>
+            )}
+
+            <ConfirmDialog
+                isOpen={!!confirmAction}
+                onClose={() => setConfirmAction(null)}
+                onConfirm={() => {
+                    if (confirmAction?.type === 'decommission') {
+                        deleteWardMutation.mutate(confirmAction.id);
+                    } else if (confirmAction?.type === 'discharge') {
+                        dischargeMutation.mutate({ id: confirmAction.id, notes: 'Standard discharge protocol followed.' });
+                    } else if (confirmAction?.type === 'delete-charge') {
+                        deleteChargeMutation.mutate({ admissionId: showAdmissionDetail!, chargeId: confirmAction.id });
+                    }
+                    setConfirmAction(null);
+                }}
+                title={confirmAction?.type === 'decommission' ? 'Decommission Ward' : confirmAction?.type === 'discharge' ? 'Patient Discharge' : 'Remove Charge'}
+                description={confirmAction?.type === 'decommission'
+                    ? `Are you sure you want to decommission ${confirmAction?.extra}? All associated beds will be removed.`
+                    : confirmAction?.type === 'discharge'
+                        ? 'Are you sure you want to discharge this patient? This will finalize their stay and clear the bed.'
+                        : `Are you sure you want to remove the charge for "${confirmAction?.extra}"?`}
+                confirmText={confirmAction?.type === 'decommission' ? 'Decommission' : confirmAction?.type === 'discharge' ? 'Discharge' : 'Remove Charge'}
+                isLoading={deleteWardMutation.isPending || dischargeMutation.isPending || deleteChargeMutation.isPending}
+            />
         </div>
     );
 }
@@ -346,7 +385,7 @@ function AdmitModal({ onClose, patients, wards }: any) {
     );
 }
 
-function AdmissionDetailModal({ id, onClose, onTransfer }: { id: string, onClose: () => void, onTransfer: (id: string, bed: string) => void }) {
+function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id: string, onClose: () => void, onTransfer: (id: string, bed: string) => void, onConfirmAction: (type: any, id: string, extra?: any) => void }) {
     const [activeTab, setActiveTab] = useState<'vitals' | 'notes' | 'charges' | 'payments'>('vitals');
     const [medSearch, setMedSearch] = useState('');
     const [vitalsDate, setVitalsDate] = useState(new Date().toISOString());
@@ -372,11 +411,6 @@ function AdmissionDetailModal({ id, onClose, onTransfer }: { id: string, onClose
         mutationFn: async ({ chargeId, data }: { chargeId: string, data: any }) => api.patch(`/wards/admissions/${id}/charges/${chargeId}`, data),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admission', id] }),
         onError: (err: any) => alert(err.response?.data?.message || 'Failed to update charge')
-    });
-
-    const deleteChargeMutation = useMutation({
-        mutationFn: async (chargeId: string) => api.delete(`/wards/admissions/${id}/charges/${chargeId}`),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admission', id] })
     });
 
     const dischargeMutation = useMutation({
@@ -446,9 +480,7 @@ function AdmissionDetailModal({ id, onClose, onTransfer }: { id: string, onClose
                                 TRANSFER
                             </button>
                             <button
-                                onClick={() => {
-                                    if (confirm('Discharge patient?')) dischargeMutation.mutate('Standard discharge protocol followed.');
-                                }}
+                                onClick={() => onConfirmAction('discharge', admission.id)}
                                 className="px-4 py-2 bg-red-50 text-red-600 text-[10px] font-black uppercase rounded-xl border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm flex items-center gap-2"
                             >
                                 <LogOut className="h-3.5 w-3.5" />
@@ -773,9 +805,7 @@ function AdmissionDetailModal({ id, onClose, onTransfer }: { id: string, onClose
                                                     <td className="px-6 py-4 flex items-center justify-between pr-10">
                                                         <p className="font-semibold">{c.description}</p>
                                                         <button
-                                                            onClick={() => {
-                                                                if (confirm('Remove this charge?')) deleteChargeMutation.mutate(c.id);
-                                                            }}
+                                                            onClick={() => onConfirmAction('delete-charge', c.id, c.description)}
                                                             className="p-1 px-2 hover:bg-red-50 text-red-400 hover:text-red-600 rounded-lg transition-all opacity-0 group-hover/row:opacity-100"
                                                         >
                                                             <Trash2 className="h-3.5 w-3.5" />
@@ -1129,7 +1159,7 @@ function TransferModal({ admissionId, currentBed, onClose }: { admissionId: stri
     const availableBeds = targetWard?.beds.filter((b: any) => b.status === 'AVAILABLE') || [];
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
             <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 animate-in zoom-in-95">
                 <div className="p-8 border-b border-slate-100 dark:border-slate-800">
                     <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
@@ -1152,7 +1182,7 @@ function TransferModal({ admissionId, currentBed, onClose }: { admissionId: stri
 
                     <div>
                         <label className="block text-[9px] font-black uppercase text-slate-400 mb-2">Available Beds</label>
-                        <select {...register('target_bed_id', { required: true })} disabled={!selectedWardId} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold">
+                        <select {...register('new_bed_id', { required: true })} disabled={!selectedWardId} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold">
                             <option value="">Select Target Bed</option>
                             {availableBeds.map((b: any) => (
                                 <option key={b.id} value={b.id}>{b.bed_number}</option>
