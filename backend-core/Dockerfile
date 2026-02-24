@@ -5,12 +5,12 @@ RUN apk add --no-cache libc6-compat openssl
 # Dependencies
 FROM base AS deps
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm i --only=production
 
 # Builder
 FROM base AS builder
 COPY package*.json ./
-RUN npm ci
+RUN npm i
 COPY . .
 RUN npx prisma generate
 RUN npm run build

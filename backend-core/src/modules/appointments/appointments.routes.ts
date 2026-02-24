@@ -207,4 +207,104 @@ router.get('/today', authorize('appointments:read'), async (req: Request, res: R
   }
 });
 
+
+// GET /api/v1/appointments/queue/today
+router.get('/queue/today', authorize('appointments:read'), async (req: Request, res: Response) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const queue = await prisma.appointment.findMany({
+    where: {
+      tenant_id: req.tenantId!,
+      scheduled_at: { gte: today, lt: tomorrow },
+      status: { in: ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS'] }
+    },
+    include: {
+      patient: { select: { first_name: true, last_name: true, mrn: true } },
+      doctor: { select: { first_name: true, last_name: true } }
+    },
+    orderBy: { scheduled_at: 'asc' }
+  });
+
+  const enriched = queue.map((apt:any, index:number) => ({
+    ...apt,
+    token_number: index + 1,
+    estimated_wait_mins: index * 15 // 15 min per patient
+  }));
+
+  sendSuccess(res, enriched);
+});
+
+// PATCH /api/v1/appointments/:id/call-next
+router.patch('/:id/call-next', authorize('appointments:write'), async (req: Request, res: Response) => {
+  await prisma.appointment.update({
+    where: { id: req.params.id },
+    data: { status: 'IN_PROGRESS' }
+  });
+  // Trigger notification to patient
+  sendSuccess(res, { message: 'Patient called' });
+});
+
+
+
+// GET /api/v1/appointments/available-slots
+router.get('/available-slots', async (req: Request, res: Response) => {
+  const { doctor_id, date } = req.query;
+  
+  const startDate = new Date(date as string);
+  startDate.setHours(9, 0, 0, 0); // 9 AM
+  const endDate = new Date(date as string);
+  endDate.setHours(17, 0, 0, 0); // 5 PM
+
+  // Get doctor's schedule
+  const dayOfWeek = startDate.getDay();
+  const schedule = await prisma.staffSchedule.findFirst({
+    where: { user_id: doctor_id, day_of_week: dayOfWeek, is_active: true }
+  });
+
+  if (!schedule) {
+    return sendSuccess(res, []);
+  }
+
+  // Get booked appointments
+  const booked = await prisma.appointment.findMany({
+    where: {
+      doctor_id,
+      scheduled_at: { gte: startDate, lte: endDate },
+      status: { in: ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS'] }
+    },
+    select: { scheduled_at: true, duration_mins: true }
+  });
+
+  // Generate 30-min slots
+  const slots = [];
+  let current = new Date(startDate);
+  current.setHours(parseInt(schedule.start_time.split(':')[0]), parseInt(schedule.start_time.split(':')[1]));
+
+  while (current < endDate) {
+    const isBooked = booked.some(apt => {
+      const start = new Date(apt.scheduled_at);
+      const end = new Date(start.getTime() + apt.duration_mins * 60000);
+      return current >= start && current < end;
+    });
+
+    slots.push({
+      time: current.toISOString(),
+      available: !isBooked
+    });
+
+    current = new Date(current.getTime() + 30 * 60000); // +30 mins
+  }
+
+  sendSuccess(res, slots);
+});
+
+// POST /api/v1/appointments/book-online
+router.post('/book-online', async (req: Request, res: Response) => {
+  // Similar to regular appointment creation but with patient self-booking
+  // Status would be 'SCHEDULED' and require confirmation
+});
+
 export default router;

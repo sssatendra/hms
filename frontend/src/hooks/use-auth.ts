@@ -12,14 +12,24 @@ export function useAuth() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  // Verify session on mount
-  const { data: meData, isLoading: meLoading } = useQuery({
+  // Verify session on mount - WITH ERROR HANDLING
+  const { data: meData, isLoading: meLoading, error: meError } = useQuery({
     queryKey: ['auth', 'me'],
     queryFn: () => coreApi.get('/auth/me'),
     enabled: isAuthenticated,
     retry: false,
     staleTime: 5 * 60 * 1000,
   });
+
+  // 🔧 FIX: Handle /auth/me failure to clear stale auth state
+  useEffect(() => {
+    if (meError && isAuthenticated) {
+      // Session is invalid on the server, clear local state
+      clearAuth();
+      queryClient.clear();
+      router.push('/login');
+    }
+  }, [meError, isAuthenticated, clearAuth, queryClient, router]);
 
   // Login mutation
   const loginMutation = useMutation({

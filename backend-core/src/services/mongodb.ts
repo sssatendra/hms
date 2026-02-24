@@ -30,6 +30,18 @@ export interface IClinicalNote extends Document {
   objective: string;           // Examination findings (SOAP)
   assessment: string;          // Diagnosis/Assessment (SOAP)
   plan: string;                // Treatment plan (SOAP)
+  chief_complaint: string;
+  vitals?: {
+    temperature?: number;
+    blood_pressure_sys?: number;
+    blood_pressure_dia?: number;
+    pulse_rate?: number;
+    respiratory_rate?: number;
+    oxygen_saturation?: number;
+    weight?: number;
+    height?: number;
+    bmi?: number;
+  };
   icd_codes: string[];         // ICD-10 codes
   allergies_noted: string[];
   follow_up_instructions?: string;
@@ -63,6 +75,18 @@ const ClinicalNoteSchema = new Schema<IClinicalNote>(
     objective: { type: String, default: '' },
     assessment: { type: String, required: true },
     plan: { type: String, default: '' },
+    chief_complaint: { type: String, default: '' },
+    vitals: {
+      temperature: Number,
+      blood_pressure_sys: Number,
+      blood_pressure_dia: Number,
+      pulse_rate: Number,
+      respiratory_rate: Number,
+      oxygen_saturation: Number,
+      weight: Number,
+      height: Number,
+      bmi: Number,
+    },
     icd_codes: [{ type: String }],
     allergies_noted: [{ type: String }],
     follow_up_instructions: { type: String },

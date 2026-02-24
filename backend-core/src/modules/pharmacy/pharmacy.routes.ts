@@ -8,6 +8,7 @@ import { auditMiddleware } from '../../middleware/audit';
 import { cacheDel, cacheGet, cacheSet, CacheKeys, cacheDelPattern } from '../../services/redis';
 import { addPharmacySyncJob, addNotificationJob } from '../../services/queue';
 import { logger } from '../../utils/logger';
+import { Decimal } from '@prisma/client/runtime/library';
 
 const router = Router();
 router.use(authenticate);
@@ -36,6 +37,16 @@ const inventorySchema = z.object({
   storage_condition: z.string().optional(),
   controlled_drug: z.boolean().default(false),
   location: z.string().optional(),
+});
+
+const saleSchema = z.object({
+  patient_id: z.string().uuid().optional(),
+  guest_name: z.string().optional(),
+  guest_phone: z.string().optional(),
+  items: z.array(z.object({
+    inventory_item_id: z.string().uuid(),
+    quantity: z.number().int().positive(),
+  })),
 });
 
 const dispenseSchema = z.object({
@@ -222,8 +233,8 @@ router.patch(
             status: new_quantity === 0
               ? 'OUT_OF_STOCK'
               : new_quantity <= 10
-              ? 'LOW_STOCK'
-              : 'ACTIVE',
+                ? 'LOW_STOCK'
+                : 'ACTIVE',
           },
         });
 
@@ -484,6 +495,149 @@ router.post('/suppliers', authorize('pharmacy:manage'), async (req: Request, res
   } catch (error) {
     sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to create supplier', 500);
   }
+});
+
+// POST /api/v1/pharmacy/sale (OTC)
+router.post('/sale', authorize('pharmacy:write'), auditMiddleware({ resource: 'pharmacy_sale', action: 'CREATE' }), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const data = saleSchema.parse(req.body);
+    const tenantId = req.tenantId!;
+
+    const result = await prisma.$transaction(async (tx) => {
+      const transactions = [];
+      let totalAmount = 0;
+      const invoiceItems = [];
+
+      for (const item of data.items) {
+        const inventory = await tx.pharmacyInventory.findFirst({
+          where: { id: item.inventory_item_id, tenant_id: tenantId }
+        });
+
+        if (!inventory || inventory.stock_quantity < item.quantity) {
+          throw new Error(`Insufficient stock for ${inventory?.drug_name || 'item'}`);
+        }
+
+        // Update stock
+        await tx.pharmacyInventory.update({
+          where: { id: item.inventory_item_id },
+          data: { stock_quantity: { decrement: item.quantity } }
+        });
+
+        // Create transaction
+        const transaction = await tx.pharmacyTransaction.create({
+          data: {
+            tenant_id: tenantId,
+            inventory_item_id: item.inventory_item_id,
+            type: 'SALE',
+            quantity: item.quantity,
+            unit_cost: inventory.unit_cost,
+            total_amount: new Decimal(Number(inventory.selling_price) * item.quantity),
+            reference_type: 'OTC_SALE',
+            notes: !data.patient_id && data.guest_name ? `Guest: ${data.guest_name} (${data.guest_phone || 'No Phone'})` : undefined,
+            performed_by: req.user!.userId
+          }
+        });
+        transactions.push(transaction);
+        totalAmount += Number(inventory.selling_price) * item.quantity;
+
+        invoiceItems.push({
+          description: inventory.drug_name,
+          quantity: item.quantity,
+          unit_price: inventory.selling_price,
+          total: new Decimal(Number(inventory.selling_price) * item.quantity),
+          category: 'pharmacy'
+        });
+      }
+
+      // Create an invoice if patient_id is provided
+      let invoice = null;
+      if (data.patient_id) {
+        const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const count = await tx.invoice.count({ where: { tenant_id: tenantId } });
+        const invoice_number = `INV-PH-${dateStr}-${(count + 1).toString().padStart(4, '0')}`;
+
+        invoice = await tx.invoice.create({
+          data: {
+            tenant_id: tenantId,
+            patient_id: data.patient_id,
+            invoice_number,
+            subtotal: new Decimal(totalAmount),
+            total: new Decimal(totalAmount),
+            balance_due: new Decimal(totalAmount),
+            created_by: req.user!.userId,
+            items: { create: invoiceItems }
+          }
+        });
+      }
+
+      return { transactions, invoice };
+    });
+
+    sendCreated(res, result);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) return sendError(res, ErrorCodes.VALIDATION_ERROR, 'Validation failed', 400, error.errors);
+    logger.error('OTC Sale error', { error });
+    sendError(res, ErrorCodes.BAD_REQUEST, error.message || 'Failed to process sale', 400);
+  }
+});
+
+
+// GET /api/v1/pharmacy/pending-prescriptions
+router.get('/pending-prescriptions', authorize('pharmacy:read'), async (req, res) => {
+  const prescriptions = await prisma.prescription.findMany({
+    where: {
+      tenant_id: req.tenantId!,
+      status: { in: ['ACTIVE', 'PARTIALLY_DISPENSED'] }
+    },
+    include: {
+      patient: { select: { first_name: true, last_name: true, mrn: true } },
+      doctor: { select: { first_name: true, last_name: true } },
+      items: {
+        include: {
+          medication: true
+        }
+      }
+    },
+    orderBy: { created_at: 'desc' }
+  });
+
+  sendSuccess(res, prescriptions);
+});
+
+// POST /api/v1/pharmacy/dispense
+router.post('/dispense', authorize('pharmacy:dispense'), async (req, res) => {
+  const { prescription_id, items } = req.body;
+
+  await prisma.$transaction(async (tx) => {
+    // Create dispensing logs
+    for (const item of items) {
+      await tx.dispensingLog.create({
+        data: {
+          tenant_id: req.tenantId!,
+          prescription_item_id: item.prescription_item_id,
+          inventory_item_id: item.inventory_item_id,
+          quantity_dispensed: item.quantity,
+          dispensed_by: req.user!.userId
+        }
+      });
+
+      // Update inventory
+      await tx.pharmacyInventory.update({
+        where: { id: item.inventory_item_id },
+        data: { 
+          quantity_in_stock: { decrement: item.quantity }
+        }
+      });
+    }
+
+    // Update prescription status
+    await tx.prescription.update({
+      where: { id: prescription_id },
+      data: { status: 'DISPENSED' }
+    });
+  });
+
+  sendSuccess(res, { message: 'Prescription dispensed' });
 });
 
 export default router;

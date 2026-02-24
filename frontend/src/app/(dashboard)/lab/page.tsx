@@ -4,12 +4,14 @@ import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   FlaskConical, Upload, CheckCircle, Clock, AlertCircle,
-  Search, Plus, FileText, Loader2, X
+  Search, Plus, FileText, Loader2, X, Microscope
 } from 'lucide-react';
 import { coreApi, labApi } from '@/lib/api';
 import { formatDateTime, getStatusColor, cn } from '@/lib/utils';
 import { SkeletonTable } from '@/components/shared/skeleton';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
+import LabOrderDetailModal from '@/components/lab/LabOrderDetailModal';
+import Link from 'next/link';
 
 function LabPage() {
   const [search, setSearch] = useState('');
@@ -41,6 +43,9 @@ function LabPage() {
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       coreApi.patch(`/lab/orders/${id}/status`, { status }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['lab', 'orders'] }),
+    onError: (error: any) => {
+      alert(`Failed to update status: ${error.message || 'Unknown error'}`);
+    }
   });
 
   const uploadFileMutation = useMutation({
@@ -84,6 +89,22 @@ function LabPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Laboratory</h1>
           <p className="text-sm text-gray-500">Lab orders and test results management</p>
+        </div>
+        <div className="flex gap-2">
+          <Link
+            href="/lab/tests"
+            className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl hover:bg-muted transition-all font-bold text-xs uppercase tracking-wider"
+          >
+            <Microscope className="h-4 w-4" />
+            Manage Tests
+          </Link>
+          <Link
+            href="/lab/orders/new"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/20"
+          >
+            <Plus className="h-4 w-4" />
+            New Order
+          </Link>
         </div>
       </div>
 
@@ -206,8 +227,8 @@ function LabPage() {
                       <span className={cn(
                         'text-xs px-2 py-1 rounded-full font-medium',
                         order.priority === 'STAT' ? 'bg-red-100 text-red-700' :
-                        order.priority === 'URGENT' ? 'bg-orange-100 text-orange-700' :
-                        'bg-gray-100 text-gray-600'
+                          order.priority === 'URGENT' ? 'bg-orange-100 text-orange-700' :
+                            'bg-gray-100 text-gray-600'
                       )}>
                         {order.priority}
                       </span>
@@ -255,6 +276,12 @@ function LabPage() {
                             Upload
                           </button>
                         )}
+                        <button
+                          onClick={() => setSelectedOrder(order.id)}
+                          className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded hover:bg-muted/80 transition-colors"
+                        >
+                          View Details
+                        </button>
                         {/* Files indicator */}
                         {order.files?.length > 0 && (
                           <span className="flex items-center gap-1 text-xs text-gray-500">
@@ -271,7 +298,7 @@ function LabPage() {
           </div>
         )}
 
-        {meta && meta.totalPages > 1 && (
+        {meta?.totalPages && meta.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
             <p className="text-sm text-gray-500">Page {page} of {meta.totalPages}</p>
             <div className="flex gap-2">
@@ -283,8 +310,8 @@ function LabPage() {
                 Previous
               </button>
               <button
-                onClick={() => setPage(p => Math.min(meta.totalPages, p + 1))}
-                disabled={page === meta.totalPages}
+                onClick={() => setPage(p => Math.min(meta?.totalPages || 1, p + 1))}
+                disabled={page === meta?.totalPages}
                 className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50"
               >
                 Next
@@ -293,6 +320,13 @@ function LabPage() {
           </div>
         )}
       </div>
+
+      {selectedOrder && (
+        <LabOrderDetailModal
+          orderId={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+        />
+      )}
     </div>
   );
 }

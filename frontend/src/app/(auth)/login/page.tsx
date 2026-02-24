@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Eye, EyeOff, Hospital, Loader2, Lock, Mail, Building2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Lock, Mail, Building2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 
@@ -45,7 +45,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4 shadow-lg">
-            <Hospital className="h-8 w-8 text-white" />
+            <Building2 className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">HMS Portal</h1>
           <p className="text-gray-500 mt-1">Hospital Management System</p>

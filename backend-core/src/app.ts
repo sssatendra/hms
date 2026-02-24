@@ -18,6 +18,8 @@ import appointmentsRoutes from './modules/appointments/appointments.routes';
 import pharmacyRoutes from './modules/pharmacy/pharmacy.routes';
 import labRoutes from './modules/lab/lab.routes';
 import emrRoutes from './modules/emr/emr.routes';
+import billingRoutes from './modules/billing/billing.routes';
+import wardsRoutes from './modules/wards/wards.routes';
 
 export const createApp = (): Application => {
   const app = express();
@@ -93,6 +95,8 @@ export const createApp = (): Application => {
   app.use('/api/v1/pharmacy', tenantMiddleware, pharmacyRoutes);
   app.use('/api/v1/lab', tenantMiddleware, labRoutes);
   app.use('/api/v1/emr', tenantMiddleware, emrRoutes);
+  app.use('/api/v1/billing', tenantMiddleware, billingRoutes);
+  app.use('/api/v1/wards', tenantMiddleware, wardsRoutes);
 
   // ─── 404 Handler ───────────────────────────────────────────────────────────
   app.use((req: Request, res: Response) => {

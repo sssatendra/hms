@@ -214,6 +214,9 @@ model Tenant {
   staff_schedules     StaffSchedule[]
   departments         Department[]
   suppliers           Supplier[]
+  patient_charges     PatientCharge[]
+  progress_notes      ProgressNote[]
+  surgery_packages    SurgeryPackage[]
 
   @@map("tenants")
 }
@@ -294,6 +297,7 @@ model User {
   staff_schedules     StaffSchedule[]
   audit_logs          AuditLog[]
   notifications       Notification[]
+  progress_notes      ProgressNote[]
 
   @@unique([tenant_id, email])
   @@unique([tenant_id, employee_id])
@@ -333,6 +337,8 @@ model Patient {
   bed_admissions      BedAdmission[]
   invoices            Invoice[]
   vital_signs         VitalSign[]
+  progress_notes      ProgressNote[]
+  charges             PatientCharge[]
 
   @@unique([tenant_id, mrn])
   @@index([tenant_id])
@@ -398,10 +404,65 @@ model VitalSign {
 
   patient         Patient      @relation(fields: [patient_id], references: [id])
   appointment     Appointment? @relation(fields: [appointment_id], references: [id])
+  admission       BedAdmission? @relation(fields: [admission_id], references: [id])
+  admission_id    String?
 
   @@index([tenant_id])
   @@index([tenant_id, patient_id])
+  @@index([admission_id])
   @@map("vital_signs")
+}
+
+model ProgressNote {
+  id              String   @id @default(uuid())
+  tenant_id       String
+  patient_id      String
+  admission_id    String?
+  doctor_id       String
+  note            String
+  category        String   @default("GENERAL") // GENERAL, SOAP, SURGICAL, NURSING
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  tenant          Tenant        @relation(fields: [tenant_id], references: [id])
+  patient         Patient       @relation(fields: [patient_id], references: [id])
+  admission       BedAdmission? @relation(fields: [admission_id], references: [id])
+  doctor          User          @relation(fields: [doctor_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([tenant_id, patient_id])
+  @@index([admission_id])
+  @@map("progress_notes")
+}
+
+model PatientCharge {
+  id              String   @id @default(uuid())
+  tenant_id       String
+  patient_id      String
+  admission_id    String?
+  description     String
+  amount          Decimal  @db.Decimal(12, 2)
+  quantity        Int      @default(1)
+  category        String   @default("OTHER") // SURGERY, RADIOLOGY, LAB, CONSULTATION
+  status          String   @default("PENDING") // PENDING, INVOICED
+  invoice_id      String?
+  is_emergency    Boolean  @default(false)
+  payment_status  String   @default("UNPAID") // UNPAID, PAID
+  service_status  String   @default("PENDING") // PENDING, APPROVED, COMPLETED
+  approved_at     DateTime?
+  approved_by     String?
+  date            DateTime @default(now())
+  performed_by    String?
+  created_at      DateTime @default(now())
+
+  tenant          Tenant        @relation(fields: [tenant_id], references: [id])
+  patient         Patient       @relation(fields: [patient_id], references: [id])
+  admission       BedAdmission? @relation(fields: [admission_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([tenant_id, patient_id])
+  @@index([admission_id])
+  @@map("patient_charges")
 }
 
 // ─── Prescription / EMR ───────────────────────────────────────────────────────
@@ -441,8 +502,11 @@ model PrescriptionItem {
   inventory_item_id String?
   drug_name        String
   dosage           String
+  dosage_unit      String?  // e.g., mg, ml, tablets
   frequency        String
   duration         String
+  days_supply      Int?
+  refills          Int      @default(0)
   quantity_prescribed Int
   quantity_dispensed  Int   @default(0)
   route            String?  // oral, IV, topical, etc.
@@ -735,6 +799,7 @@ model Ward {
   name          String
   code          String
   type          WardType @default(GENERAL)
+  daily_rate    Decimal  @db.Decimal(10, 2) @default(0.00)
   total_beds    Int
   is_active     Boolean  @default(true)
   created_at    DateTime @default(now())
@@ -753,9 +818,11 @@ model Bed {
   id          String    @id @default(uuid())
   tenant_id   String
   ward_id     String
-  bed_number  String
-  status      BedStatus @default(AVAILABLE)
-  is_active   Boolean   @default(true)
+  bed_number          String
+  bed_type            String    @default("Standard")
+  daily_rate_override Decimal?  @db.Decimal(10, 2)
+  status              BedStatus @default(AVAILABLE)
+  is_active           Boolean   @default(true)
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
 
@@ -775,15 +842,22 @@ model BedAdmission {
   bed_id          String
   admitted_at     DateTime  @default(now())
   discharged_at   DateTime?
-  admission_notes String?
-  discharge_notes String?
-  admitted_by     String
+  admission_notes       String?
+  discharge_notes       String?
+  diagnosis_on_admission String?
+  advance_paid          Decimal   @db.Decimal(12, 2) @default(0.00)
+  expected_discharge    DateTime?
+  admitted_by           String
   discharged_by   String?
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt
 
   patient         Patient  @relation(fields: [patient_id], references: [id])
   bed             Bed      @relation(fields: [bed_id], references: [id])
+  charges         PatientCharge[]
+  vitals          VitalSign[]
+  progress_notes  ProgressNote[]
+  payments        Payment[]
 
   @@index([tenant_id])
   @@index([patient_id])
@@ -804,6 +878,11 @@ model Invoice {
   tax             Decimal       @db.Decimal(12, 2) @default(0)
   total           Decimal       @db.Decimal(12, 2)
   paid_amount     Decimal       @db.Decimal(12, 2) @default(0)
+  advance_paid    Decimal       @db.Decimal(12, 2) @default(0)
+  insurance_amount_covered Decimal @db.Decimal(12, 2) @default(0)
+  balance_due     Decimal       @db.Decimal(12, 2) @default(0)
+  insurance_provider String?
+  insurance_claim_id String?
   due_date        DateTime?
   notes           String?
   created_by      String
@@ -839,7 +918,7 @@ model InvoiceItem {
 model Payment {
   id             String        @id @default(uuid())
   tenant_id      String
-  invoice_id     String
+  invoice_id     String?
   amount         Decimal       @db.Decimal(12, 2)
   method         PaymentMethod
   transaction_id String?
@@ -847,10 +926,13 @@ model Payment {
   notes          String?
   received_by    String
 
-  invoice        Invoice @relation(fields: [invoice_id], references: [id])
+  invoice        Invoice? @relation(fields: [invoice_id], references: [id])
+  admission      BedAdmission? @relation(fields: [admission_id], references: [id])
+  admission_id   String?
 
   @@index([tenant_id])
   @@index([invoice_id])
+  @@index([admission_id])
   @@map("payments")
 }
 
@@ -920,4 +1002,26 @@ model Notification {
   @@index([tenant_id, user_id])
   @@index([tenant_id, status])
   @@map("notifications")
+}
+
+
+// Add to schema.prisma
+
+model SurgeryPackage {
+  id              String   @id @default(uuid())
+  tenant_id       String
+  name            String
+  code            String
+  description     String?
+  base_price      Decimal  @db.Decimal(12, 2)
+  inclusions      Json     // Array of included items
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  tenant          Tenant   @relation(fields: [tenant_id], references: [id])
+
+  @@unique([tenant_id, code])
+  @@index([tenant_id])
+  @@map("surgery_packages")
 }

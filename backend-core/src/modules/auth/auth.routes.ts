@@ -332,7 +332,6 @@ router.get('/me', authenticate, async (req: Request, res: Response): Promise<voi
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user!.userId },
-      include: { role: true, department: true },
       select: {
         id: true,
         email: true,
@@ -346,7 +345,7 @@ router.get('/me', authenticate, async (req: Request, res: Response): Promise<voi
         role: { select: { name: true } },
         department: { select: { id: true, name: true } },
       },
-    } as any);
+    });
 
     if (!user) {
       sendError(res, ErrorCodes.NOT_FOUND, 'User not found', 404);

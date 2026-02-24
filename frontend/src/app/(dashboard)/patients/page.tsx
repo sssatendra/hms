@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Plus, Search, User, Phone, Calendar, Droplets, ChevronRight, RefreshCw
+  Plus, Search, User, Phone, Calendar, Droplets, ChevronRight, RefreshCw, FileText
 } from 'lucide-react';
 import { coreApi } from '@/lib/api';
 import { formatAge, formatDate, getStatusColor, cn, generateMRN } from '@/lib/utils';
@@ -11,6 +11,8 @@ import { SkeletonTable } from '@/components/shared/skeleton';
 import { ErrorBoundary, QueryError } from '@/components/shared/error-boundary';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
+
 
 function PatientsPage() {
   const [search, setSearch] = useState('');
@@ -19,7 +21,7 @@ function PatientsPage() {
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const debouncedSearch = useDebounce(search, 400);
   const queryClient = useQueryClient();
-
+  const router = useRouter();
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['patients', page, debouncedSearch],
     queryFn: () =>
@@ -161,10 +163,10 @@ function PatientsPage() {
         )}
 
         {/* Pagination */}
-        {meta && meta.totalPages > 1 && (
+        {meta?.totalPages && meta.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
             <p className="text-sm text-gray-500">
-              Showing {(page - 1) * 20 + 1}–{Math.min(page * 20, meta.total)} of {meta.total}
+              Showing {(page - 1) * 20 + 1}–{Math.min(page * 20, meta.total || 0)} of {meta.total}
             </p>
             <div className="flex gap-2">
               <button
@@ -175,7 +177,7 @@ function PatientsPage() {
                 Previous
               </button>
               <button
-                onClick={() => setPage(Math.min(meta.totalPages, page + 1))}
+                onClick={() => setPage(Math.min(meta.totalPages || 0, page + 1))}
                 disabled={page === meta.totalPages}
                 className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50 transition-colors"
               >
@@ -202,7 +204,7 @@ function PatientsPage() {
 
 function AddPatientModal({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, formState: { errors } } = useForm<any>({
     defaultValues: { mrn: generateMRN() },
   });
 
@@ -222,7 +224,13 @@ function AddPatientModal({ onClose }: { onClose: () => void }) {
           <h2 className="text-xl font-bold text-gray-900">Register New Patient</h2>
         </div>
 
-        <form onSubmit={handleSubmit((data) => createMutation.mutateAsync(data))} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit((data) => {
+          const formattedData = {
+            ...data,
+            allergies: data.allergies_input ? data.allergies_input.split(',').map((s: string) => s.trim()) : []
+          };
+          createMutation.mutateAsync(formattedData);
+        })} className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             {[
               { name: 'mrn', label: 'MRN', type: 'text' },
@@ -235,10 +243,9 @@ function AddPatientModal({ onClose }: { onClose: () => void }) {
               <div key={field.name}>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
                 <input
-                  {...register(field.name as any, { required: !['phone', 'email'].includes(field.name) })}
+                  {...register(field.name, { required: !['phone', 'email'].includes(field.name) })}
                   type={field.type}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                  className="w-full px-3 py-2 border border-gray-200 bg-white text-gray-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
             ))}
 
@@ -246,7 +253,7 @@ function AddPatientModal({ onClose }: { onClose: () => void }) {
               <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
               <select
                 {...register('gender', { required: true })}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-200 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select gender</option>
                 <option value="MALE">Male</option>
@@ -259,13 +266,22 @@ function AddPatientModal({ onClose }: { onClose: () => void }) {
               <label className="block text-sm font-medium text-gray-700 mb-1">Blood Group</label>
               <select
                 {...register('blood_group')}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-200 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="UNKNOWN">Unknown</option>
                 {['A_POSITIVE', 'A_NEGATIVE', 'B_POSITIVE', 'B_NEGATIVE', 'AB_POSITIVE', 'AB_NEGATIVE', 'O_POSITIVE', 'O_NEGATIVE'].map(bg => (
                   <option key={bg} value={bg}>{bg.replace('_', ' ')}</option>
                 ))}
               </select>
+            </div>
+
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Allergies (comma separated)</label>
+              <input
+                {...register('allergies_input')}
+                placeholder="e.g. Peanuts, Penicillin"
+                className="w-full px-3 py-2 border border-gray-200 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
           </div>
 
@@ -279,7 +295,7 @@ function AddPatientModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
@@ -303,7 +319,7 @@ function PatientDetailDrawer({ patient, onClose }: { patient: any; onClose: () =
     queryKey: ['patient', patient.id],
     queryFn: () => coreApi.get<any>(`/patients/${patient.id}`),
   });
-
+  const router = useRouter();
   const fullPatient = data?.data || patient;
 
   return (
@@ -367,23 +383,19 @@ function PatientDetailDrawer({ patient, onClose }: { patient: any; onClose: () =
             </div>
           )}
 
-          {/* Recent appointments */}
-          {fullPatient.appointments?.length > 0 && (
-            <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Recent Appointments</p>
-              <div className="space-y-2">
-                {fullPatient.appointments.map((appt: any) => (
-                  <div key={appt.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-sm">
-                    <span className="text-gray-700">Dr. {appt.doctor?.last_name}</span>
-                    <span className="text-gray-500 text-xs">{formatDate(appt.scheduled_at)}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(appt.status)}`}>
-                      {appt.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Actions */}
+          <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
+            <button
+              onClick={() => router.push(`/patients/${patient.id}/records`)}
+              className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95"
+            >
+              <FileText className="h-4 w-4" />
+              View Full Clinical Records
+            </button>
+            <button className="w-full py-3 bg-gray-50 text-gray-700 rounded-xl font-bold border border-gray-200 hover:bg-gray-100 transition-all">
+              Edit Patient Details
+            </button>
+          </div>
         </div>
       </div>
     </div>

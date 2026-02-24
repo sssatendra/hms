@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, CalendarDays, FileText, Pill,
-  FlaskConical, Hospital, Settings, ChevronRight, Building2
+  FlaskConical, Settings, ChevronRight, Building2
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth-store';
 import { hasPermission } from '@/lib/auth-store';
@@ -25,6 +25,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'EMR & Notes', href: '/emr', icon: FileText, permission: 'emr:read' },
   { label: 'Pharmacy', href: '/pharmacy', icon: Pill, permission: 'pharmacy:read' },
   { label: 'Laboratory', href: '/lab', icon: FlaskConical, permission: 'lab:read' },
+  { label: 'Admissions & Wards', href: '/wards', icon: Building2, permission: 'wards:read' },
+  { label: 'Billing', href: '/billing', icon: FileText, permission: 'billing:read' },
 ];
 
 const ADMIN_ITEMS: NavItem[] = [
@@ -45,18 +47,18 @@ export function Sidebar() {
     );
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm">
+    <aside className="w-64 bg-card border-r border-border flex flex-col shadow-sm">
       {/* Logo */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
-            <Hospital className="h-5 w-5 text-white" />
+          <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
+            <Building2 className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="min-w-0">
-            <h1 className="font-bold text-gray-900 text-sm truncate">
+            <h1 className="font-bold text-foreground text-sm truncate">
               {tenant?.name || 'HMS Portal'}
             </h1>
-            <p className="text-xs text-gray-500 truncate">{tenant?.slug}</p>
+            <p className="text-xs text-muted-foreground truncate">{tenant?.slug}</p>
           </div>
         </div>
       </div>
@@ -70,14 +72,14 @@ export function Sidebar() {
             className={cn(
               'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group',
               isActive(item.href)
-                ? 'bg-blue-50 text-blue-700'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
           >
             <item.icon
               className={cn(
                 'h-4 w-4 flex-shrink-0',
-                isActive(item.href) ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
+                isActive(item.href) ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
               )}
             />
             {item.label}
@@ -104,14 +106,14 @@ export function Sidebar() {
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group',
                   isActive(item.href)
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                 )}
               >
                 <item.icon
                   className={cn(
                     'h-4 w-4 flex-shrink-0',
-                    isActive(item.href) ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
+                    isActive(item.href) ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
                   )}
                 />
                 {item.label}
@@ -122,18 +124,18 @@ export function Sidebar() {
       </nav>
 
       {/* User info */}
-      <div className="p-3 border-t border-gray-200">
+      <div className="p-3 border-t border-border">
         <div className="flex items-center gap-3 px-2 py-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-xs font-bold flex-shrink-0">
             {user ? getInitials(user.first_name, user.last_name) : '?'}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-medium text-foreground truncate">
               {user?.first_name} {user?.last_name}
             </p>
-            <p className="text-xs text-gray-500 truncate">{user?.role?.replace('_', ' ')}</p>
+            <p className="text-xs text-muted-foreground truncate">{user?.role?.replace('_', ' ')}</p>
           </div>
-          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
         </div>
       </div>
     </aside>

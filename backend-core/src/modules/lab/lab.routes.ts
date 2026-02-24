@@ -70,6 +70,36 @@ router.post('/tests', authorize('admin:settings'), async (req: Request, res: Res
   }
 });
 
+// PUT /api/v1/lab/tests/:id
+router.put('/tests/:id', authorize('admin:settings'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const tenantId = req.tenantId!;
+    const updated = await prisma.labTest.update({
+      where: { id, tenant_id: tenantId },
+      data: req.body,
+    });
+    sendSuccess(res, updated);
+  } catch (error) {
+    sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to update lab test', 500);
+  }
+});
+
+// DELETE /api/v1/lab/tests/:id (soft delete)
+router.delete('/tests/:id', authorize('admin:settings'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const tenantId = req.tenantId!;
+    await prisma.labTest.update({
+      where: { id, tenant_id: tenantId },
+      data: { is_active: false },
+    });
+    sendSuccess(res, { message: 'Lab test deactivated successfully' });
+  } catch (error) {
+    sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to deactivate lab test', 500);
+  }
+});
+
 // GET /api/v1/lab/orders
 router.get('/orders', authorize('lab:read'), async (req: Request, res: Response): Promise<void> => {
   try {

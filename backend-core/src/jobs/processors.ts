@@ -2,6 +2,9 @@ import { getQueue, QUEUE_NAMES, NotificationJob, PharmacySyncJob, AuditLogJob } 
 import { prisma } from '../services/prisma';
 import { logger } from '../utils/logger';
 
+import { sendSMS, sendWhatsApp } from '../services/sms';
+
+
 // ─── Audit Log Processor ──────────────────────────────────────────────────────
 export const startAuditLogProcessor = (): void => {
   const queue = getQueue(QUEUE_NAMES.AUDIT_LOG);
@@ -130,9 +133,54 @@ export const startLabProcessor = (): void => {
   logger.info('✅ Lab processor started');
 };
 
+
+// In the notification processor
+export async function processNotificationJob(job: any) {
+  const { tenantId, userId, type, title, message, data } = job.data;
+
+  // Save to database
+  const notification = await prisma.notification.create({
+    data: {
+      tenant_id: tenantId,
+      user_id: userId,
+      type,
+      title,
+      message,
+      data,
+      status: 'PENDING'
+    }
+  });
+
+  // Get user phone
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { phone: true }
+  });
+
+  if (user?.phone) {
+    // Send SMS
+    const smsResult = await sendSMS(user.phone, `${title}: ${message}`);
+    
+    if (smsResult.success) {
+      await prisma.notification.update({
+        where: { id: notification.id },
+        data: { status: 'SENT', sent_at: new Date() }
+      });
+    } else {
+      await prisma.notification.update({
+        where: { id: notification.id },
+        data: { status: 'FAILED' }
+      });
+    }
+  }
+}
+
+
+
 export const startAllProcessors = (): void => {
   startAuditLogProcessor();
   startNotificationProcessor();
   startPharmacyProcessor();
   startLabProcessor();
+  // processNotificationJob();
 };
