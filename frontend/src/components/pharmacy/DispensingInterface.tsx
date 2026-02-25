@@ -2,11 +2,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { coreApi } from '@/lib/api';
 
 export function DispensingInterface() {
-  const [selectedPrescription, setSelectedPrescription] = useState(null);
+  const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
+  const queryClient = useQueryClient();
 
   const { data: prescriptions } = useQuery({
     queryKey: ['pharmacy', 'pending'],
@@ -48,7 +49,7 @@ export function DispensingInterface() {
               <div className="font-semibold">{item.medication.name}</div>
               <div className="text-sm">Quantity: {item.quantity}</div>
               <div className="text-sm">Instructions: {item.instructions}</div>
-              
+
               {/* Inventory selection */}
               <select className="mt-2 w-full border rounded p-2">
                 <option>Select Batch</option>
@@ -61,7 +62,7 @@ export function DispensingInterface() {
             className="w-full mt-4 bg-blue-500 text-white py-2 rounded"
             onClick={() => dispenseMutation.mutate({
               prescription_id: selectedPrescription.id,
-              items: /* mapped items */
+              items: []
             })}
           >
             Dispense All

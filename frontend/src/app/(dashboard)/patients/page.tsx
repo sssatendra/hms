@@ -19,6 +19,7 @@ function PatientsPage() {
   const [page, setPage] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [editingPatient, setEditingPatient] = useState<any>(null);
   const debouncedSearch = useDebounce(search, 400);
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -196,6 +197,18 @@ function PatientsPage() {
         <PatientDetailDrawer
           patient={selectedPatient}
           onClose={() => setSelectedPatient(null)}
+          onEdit={(patient) => {
+            setSelectedPatient(null);
+            setEditingPatient(patient);
+          }}
+        />
+      )}
+
+      {/* Edit Patient Modal */}
+      {editingPatient && (
+        <EditPatientModal
+          patient={editingPatient}
+          onClose={() => setEditingPatient(null)}
         />
       )}
     </div>
@@ -314,7 +327,129 @@ function AddPatientModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function PatientDetailDrawer({ patient, onClose }: { patient: any; onClose: () => void }) {
+function EditPatientModal({ patient, onClose }: { patient: any; onClose: () => void }) {
+  const queryClient = useQueryClient();
+  const { register, handleSubmit, formState: { errors } } = useForm<any>({
+    defaultValues: {
+      first_name: patient.first_name,
+      last_name: patient.last_name,
+      date_of_birth: new Date(patient.date_of_birth).toISOString().substring(0, 10),
+      phone: patient.phone || '',
+      email: patient.email || '',
+      gender: patient.gender,
+      blood_group: patient.blood_group,
+      allergies_input: patient.allergies?.join(', ') || ''
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: any) => coreApi.put(`/patients/${patient.id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: ['patient', patient.id] });
+      onClose();
+    },
+  });
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900">Edit Patient Details</h2>
+        </div>
+
+        <form onSubmit={handleSubmit((data) => {
+          const formattedData = {
+            ...data,
+            allergies: data.allergies_input ? data.allergies_input.split(',').map((s: string) => s.trim()) : []
+          };
+          delete formattedData.allergies_input; // Don't send this to backend
+          updateMutation.mutateAsync(formattedData);
+        })} className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { name: 'first_name', label: 'First Name', type: 'text' },
+              { name: 'last_name', label: 'Last Name', type: 'text' },
+              { name: 'date_of_birth', label: 'Date of Birth', type: 'date' },
+              { name: 'phone', label: 'Phone', type: 'tel' },
+              { name: 'email', label: 'Email', type: 'email' },
+            ].map((field) => (
+              <div key={field.name}>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                <input
+                  {...register(field.name, { required: !['phone', 'email'].includes(field.name) })}
+                  type={field.type}
+                  className="w-full px-3 py-2 border border-gray-200 bg-white text-gray-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+            ))}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+              <select
+                {...register('gender', { required: true })}
+                className="w-full px-3 py-2 border border-gray-200 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select gender</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Blood Group</label>
+              <select
+                {...register('blood_group')}
+                className="w-full px-3 py-2 border border-gray-200 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="UNKNOWN">Unknown</option>
+                {['A_POSITIVE', 'A_NEGATIVE', 'B_POSITIVE', 'B_NEGATIVE', 'AB_POSITIVE', 'AB_NEGATIVE', 'O_POSITIVE', 'O_NEGATIVE'].map(bg => (
+                  <option key={bg} value={bg}>{bg.replace('_', ' ')}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Allergies (comma separated)</label>
+              <input
+                {...register('allergies_input')}
+                placeholder="e.g. Peanuts, Penicillin"
+                className="w-full px-3 py-2 border border-gray-200 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {updateMutation.error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+              {(updateMutation.error as any).message}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={updateMutation.isPending}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {updateMutation.isPending && <RefreshCw className="h-4 w-4 animate-spin" />}
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function PatientDetailDrawer({ patient, onClose, onEdit }: { patient: any; onClose: () => void, onEdit: (patient: any) => void }) {
   const { data } = useQuery({
     queryKey: ['patient', patient.id],
     queryFn: () => coreApi.get<any>(`/patients/${patient.id}`),
@@ -392,7 +527,10 @@ function PatientDetailDrawer({ patient, onClose }: { patient: any; onClose: () =
               <FileText className="h-4 w-4" />
               View Full Clinical Records
             </button>
-            <button className="w-full py-3 bg-gray-50 text-gray-700 rounded-xl font-bold border border-gray-200 hover:bg-gray-100 transition-all">
+            <button
+              onClick={() => onEdit(fullPatient)}
+              className="w-full py-3 bg-gray-50 text-gray-700 rounded-xl font-bold border border-gray-200 hover:bg-gray-100 transition-all"
+            >
               Edit Patient Details
             </button>
           </div>

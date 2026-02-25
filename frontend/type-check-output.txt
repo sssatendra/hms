@@ -1,0 +1,129 @@
+﻿
+> hms-frontend@1.0.0 type-check
+> tsc --noEmit
+
+src/app/(dashboard)/accounting/page.tsx(347,32): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/app/(dashboard)/accounting/page.tsx(356,32): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/app/(dashboard)/accounting/page.tsx(369,17): error TS2322: Type '{ isOpen: boolean; onClose: () => void; onConfirm: () => void; title: string; description: string; confirmText: string; cancelText: string; isDestructive: boolean; }' is not assignable to type 'IntrinsicAttributes & ConfirmDialogProps'.
+  Property 'isDestructive' does not exist on type 'IntrinsicAttributes & ConfirmDialogProps'.
+src/app/(dashboard)/billing/page.tsx(110,40): error TS2339: Property 'filter' does not exist on type '{}'.
+src/app/(dashboard)/billing/page.tsx(123,86): error TS2552: Cannot find name 'formatDate'. Did you mean 'FormData'?
+src/app/(dashboard)/billing/page.tsx(216,38): error TS2339: Property 'items' does not exist on type '{}'.
+src/app/(dashboard)/billing/page.tsx(237,44): error TS2339: Property 'map' does not exist on type '{}'.
+src/app/(dashboard)/billing/page.tsx(263,77): error TS2339: Property 'items' does not exist on type '{}'.
+src/app/(dashboard)/billing/page.tsx(282,77): error TS2339: Property 'items' does not exist on type '{}'.
+src/app/(dashboard)/billing/page.tsx(288,73): error TS2339: Property 'items' does not exist on type '{}'.
+src/app/(dashboard)/billing/page.tsx(311,59): error TS2339: Property 'total_advance' does not exist on type '{}'.
+src/app/(dashboard)/billing/page.tsx(315,95): error TS2339: Property 'total_advance' does not exist on type '{}'.
+src/app/(dashboard)/billing/page.tsx(324,62): error TS2339: Property 'total_advance' does not exist on type '{}'.
+src/app/(dashboard)/billing/page.tsx(373,86): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(376,37): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(378,38): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(383,34): error TS2552: Cannot find name 'formatDate'. Did you mean 'FormData'?
+src/app/(dashboard)/billing/page.tsx(383,54): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(398,38): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(398,69): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(401,90): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(401,119): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(402,93): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(423,34): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(439,43): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(442,37): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(448,34): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(463,75): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(465,37): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(468,52): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(471,37): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(474,52): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(479,92): error TS18046: 'invoice' is of type 'unknown'.
+src/app/(dashboard)/inventory/page.tsx(60,34): error TS2339: Property 'filter' does not exist on type '{}'.
+src/app/(dashboard)/inventory/page.tsx(68,36): error TS2339: Property 'totalItems' does not exist on type '{}'.
+src/app/(dashboard)/inventory/page.tsx(76,36): error TS2339: Property 'warehousesCount' does not exist on type '{}'.
+src/app/(dashboard)/inventory/page.tsx(84,36): error TS2339: Property 'lowStockCount' does not exist on type '{}'.
+src/app/(dashboard)/inventory/page.tsx(92,36): error TS2339: Property 'expiringSoonCount' does not exist on type '{}'.
+src/app/(dashboard)/inventory/page.tsx(279,46): error TS2339: Property 'data' does not exist on type '{}'.
+src/app/(dashboard)/inventory/page.tsx(294,48): error TS2339: Property 'data' does not exist on type '{}'.
+src/app/(dashboard)/inventory/page.tsx(294,78): error TS2339: Property 'data' does not exist on type '{}'.
+src/app/(dashboard)/inventory/page.tsx(338,32): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/app/(dashboard)/inventory/page.tsx(348,32): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/app/(dashboard)/inventory/page.tsx(421,131): error TS2339: Property 'unitCost' does not exist on type '{ itemId: any; type: string; quantity: number; }'.
+src/app/(dashboard)/inventory/page.tsx(433,50): error TS2345: Argument of type '"toWarehouseId"' is not assignable to parameter of type '"type" | "quantity" | "itemId" | `itemId.${string}`'.
+src/app/(dashboard)/inventory/page.tsx(443,49): error TS2345: Argument of type '"batchNumber"' is not assignable to parameter of type '"type" | "quantity" | "itemId" | `itemId.${string}`'.
+src/app/(dashboard)/inventory/page.tsx(453,75): error TS2345: Argument of type '"unitCost"' is not assignable to parameter of type '"type" | "quantity" | "itemId" | `itemId.${string}`'.
+src/app/(dashboard)/inventory/page.tsx(457,61): error TS2345: Argument of type '"expiryDate"' is not assignable to parameter of type '"type" | "quantity" | "itemId" | `itemId.${string}`'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(44,89): error TS2339: Property 'first_name' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(44,110): error TS2339: Property 'last_name' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(45,176): error TS2339: Property 'mrn' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(53,86): error TS2339: Property 'date_of_birth' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(57,96): error TS2339: Property 'gender' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(65,65): error TS2339: Property 'admissions' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(66,63): error TS2339: Property 'progress_notes' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(67,78): error TS2339: Property 'invoices' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(68,59): error TS2339: Property 'admissions' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(68,101): error TS2339: Property 'admissions' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(95,38): error TS2339: Property 'admissions' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(139,40): error TS2339: Property 'admissions' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(139,62): error TS2339: Property 'admissions' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(157,38): error TS2339: Property 'invoices' does not exist on type '{}'.
+src/app/(dashboard)/patients/[id]/records/page.tsx(172,38): error TS2339: Property 'invoices' does not exist on type '{}'.
+src/app/(dashboard)/settings/page.tsx(22,31): error TS2345: Argument of type 'ApiResponse<unknown>' is not assignable to parameter of type 'Tenant'.
+  Type 'ApiResponse<unknown>' is missing the following properties from type 'Tenant': id, name, slug
+src/app/(dashboard)/wards/page.tsx(52,29): error TS18046: 'res.data' is of type 'unknown'.
+src/app/(dashboard)/wards/page.tsx(138,25): error TS2339: Property 'map' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(518,123): error TS2339: Property 'patient' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(518,154): error TS2339: Property 'patient' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(519,193): error TS2339: Property 'patient' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(523,78): error TS2339: Property 'bed' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(525,84): error TS2339: Property 'bed' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(532,133): error TS2339: Property 'running_total' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(537,69): error TS2339: Property 'id' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(537,83): error TS2339: Property 'bed' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(544,87): error TS2339: Property 'id' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(631,78): error TS2339: Property 'vitals' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(632,85): error TS2339: Property 'vitals' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(632,110): error TS2339: Property 'vitals' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(632,157): error TS2339: Property 'vitals' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(633,78): error TS2339: Property 'vitals' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(634,82): error TS2339: Property 'vitals' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(657,168): error TS2339: Property 'vitals' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(671,56): error TS2339: Property 'vitals' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(674,139): error TS2554: Expected 1 arguments, but got 2.
+src/app/(dashboard)/wards/page.tsx(692,56): error TS2339: Property 'vitals' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(745,48): error TS2339: Property 'progress_notes' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(750,147): error TS2554: Expected 1 arguments, but got 2.
+src/app/(dashboard)/wards/page.tsx(761,48): error TS2339: Property 'progress_notes' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(838,33): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+src/app/(dashboard)/wards/page.tsx(840,52): error TS2339: Property 'map' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(877,52): error TS2339: Property 'length' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(910,130): error TS2339: Property 'admitted_at' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(910,144): error TS2554: Expected 1 arguments, but got 2.
+src/app/(dashboard)/wards/page.tsx(914,145): error TS2339: Property 'bed' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(915,163): error TS2339: Property 'stay_details' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(920,137): error TS2339: Property 'stay_details' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(921,157): error TS2339: Property 'stay_details' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(923,56): error TS2339: Property 'charges' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(926,132): error TS2554: Expected 1 arguments, but got 2.
+src/app/(dashboard)/wards/page.tsx(984,165): error TS2339: Property 'stay_details' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(984,202): error TS2339: Property 'charges' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(988,160): error TS2339: Property 'advance_paid' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(1058,56): error TS2339: Property 'payments' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(1060,148): error TS2554: Expected 1 arguments, but got 2.
+src/app/(dashboard)/wards/page.tsx(1071,58): error TS2339: Property 'payments' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(1071,80): error TS2339: Property 'payments' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(1078,159): error TS2339: Property 'advance_paid' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(1089,56): error TS2552: Cannot find name 'formatDate'. Did you mean 'FormData'?
+src/app/(dashboard)/wards/page.tsx(1306,31): error TS2339: Property 'find' does not exist on type '{}'.
+src/app/(dashboard)/wards/page.tsx(1332,41): error TS2339: Property 'map' does not exist on type '{}'.
+src/app/(patient)/book-appointment/page.tsx(37,23): error TS2339: Property 'map' does not exist on type '{}'.
+src/app/(patient)/book-appointment/page.tsx(37,28): error TS7006: Parameter 'slot' implicitly has an 'any' type.
+src/app/(patient)/book-appointment/page.tsx(41,24): error TS2304: Cannot find name 'cn'.
+src/components/appointments/TokenQueue.tsx(18,10): error TS18046: 'data.data' is of type 'unknown'.
+src/components/appointments/TokenQueue.tsx(18,26): error TS7006: Parameter 'apt' implicitly has an 'any' type.
+src/components/appointments/TokenQueue.tsx(21,24): error TS2304: Cannot find name 'cn'.
+src/components/appointments/TokenQueue.tsx(40,36): error TS2304: Cannot find name 'callPatient'.
+src/components/lab/LabOrderDetailModal.tsx(219,42): error TS2304: Cannot find name 'Archive'.
+src/components/pharmacy/DispensingInterface.tsx(21,37): error TS2559: Type 'string[]' has no properties in common with type 'InvalidateQueryFilters<readonly unknown[]>'.
+src/components/pharmacy/DispensingInterface.tsx(30,31): error TS2339: Property 'map' does not exist on type '{}'.
+src/components/pharmacy/DispensingInterface.tsx(30,36): error TS7006: Parameter 'rx' implicitly has an 'any' type.
+src/components/pharmacy/DispensingInterface.tsx(47,44): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/pharmacy/DispensingInterface.tsx(63,52): error TS2345: Argument of type '{ prescription_id: any; items: never[]; }' is not assignable to parameter of type 'void'.

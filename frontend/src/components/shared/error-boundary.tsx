@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface Props {
   children: React.ReactNode;
@@ -55,4 +55,29 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
     return this.props.children;
   }
+}
+
+export function QueryError({ error, onRetry }: { error: any; onRetry: () => void }) {
+  if (!error) return null;
+
+  return (
+    <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
+      <div className="flex items-center gap-3 text-red-700">
+        <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+          <AlertTriangle className="h-5 w-5" />
+        </div>
+        <div>
+          <p className="text-sm font-bold">Failed to load data</p>
+          <p className="text-xs opacity-80">{error?.message || 'Check your connection and try again'}</p>
+        </div>
+      </div>
+      <button
+        onClick={onRetry}
+        className="px-4 py-2 bg-white hover:bg-red-50 text-red-700 text-xs font-black uppercase tracking-widest rounded-lg border border-red-200 transition-all active:scale-95 flex items-center gap-2 shadow-sm"
+      >
+        <RefreshCw className="h-3.5 w-3.5" />
+        Retry
+      </button>
+    </div>
+  );
 }

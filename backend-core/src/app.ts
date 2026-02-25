@@ -20,6 +20,9 @@ import labRoutes from './modules/lab/lab.routes';
 import emrRoutes from './modules/emr/emr.routes';
 import billingRoutes from './modules/billing/billing.routes';
 import wardsRoutes from './modules/wards/wards.routes';
+import inventoryRoutes from './modules/inventory/inventory.routes';
+import accountingRoutes from './modules/accounting/accounting.routes';
+import tenantsRoutes from './modules/tenants/tenants.routes';
 
 export const createApp = (): Application => {
   const app = express();
@@ -61,8 +64,8 @@ export const createApp = (): Application => {
 
   // ─── Parsing ───────────────────────────────────────────────────────────────
   app.use(compression());
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(express.json({ limit: '100mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100mb' }));
   app.use(cookieParser());
 
   // ─── Logging ───────────────────────────────────────────────────────────────
@@ -97,6 +100,9 @@ export const createApp = (): Application => {
   app.use('/api/v1/emr', tenantMiddleware, emrRoutes);
   app.use('/api/v1/billing', tenantMiddleware, billingRoutes);
   app.use('/api/v1/wards', tenantMiddleware, wardsRoutes);
+  app.use('/api/v1/inventory', tenantMiddleware, inventoryRoutes);
+  app.use('/api/v1/accounting', tenantMiddleware, accountingRoutes);
+  app.use('/api/v1/tenants', tenantMiddleware, tenantsRoutes);
 
   // ─── 404 Handler ───────────────────────────────────────────────────────────
   app.use((req: Request, res: Response) => {

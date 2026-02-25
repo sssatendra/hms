@@ -17,6 +17,11 @@ export interface Tenant {
   name: string;
   slug: string;
   logo_url?: string;
+  settings?: {
+    currency?: string;
+    country?: string;
+    [key: string]: any;
+  };
 }
 
 interface AuthState {
@@ -69,7 +74,8 @@ export const hasPermission = (userRole: string, permission: string): boolean => 
       'appointments:read', 'appointments:write', 'prescriptions:read',
       'pharmacy:read', 'pharmacy:write', 'pharmacy:manage', 'pharmacy:dispense',
       'lab:read', 'lab:write', 'emr:read', 'admin:reports', 'billing:read', 'billing:write',
-      'wards:read', 'wards:write',
+      'wards:read', 'wards:write', 'inventory:read', 'inventory:write',
+      'accounting:read', 'accounting:write',
     ],
     DOCTOR: [
       'patients:read', 'patients:write', 'appointments:read', 'appointments:write',
@@ -80,6 +86,7 @@ export const hasPermission = (userRole: string, permission: string): boolean => 
     PHARMACIST: [
       'patients:read', 'prescriptions:read', 'pharmacy:read', 'pharmacy:write',
       'pharmacy:dispense', 'pharmacy:manage', 'billing:read', 'billing:write',
+      'inventory:read',
     ],
     LAB_TECH: ['patients:read', 'lab:read', 'lab:write', 'lab:process', 'lab:upload'],
     NURSE: ['patients:read', 'patients:write', 'appointments:read', 'prescriptions:read', 'emr:read', 'wards:read', 'wards:write'],

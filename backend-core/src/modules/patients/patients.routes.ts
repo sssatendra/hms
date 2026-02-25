@@ -14,7 +14,7 @@ const router = Router();
 router.use(authenticate);
 
 const patientSchema = z.object({
-  mrn: z.string().min(1),
+  mrn: z.string().optional(),
   first_name: z.string().min(1),
   last_name: z.string().min(1),
   date_of_birth: z.string().transform((d) => new Date(d)),
@@ -129,9 +129,35 @@ router.get('/:id', authorize('patients:read'), async (req: Request, res: Respons
           },
         },
         vital_signs: {
-          take: 1,
           orderBy: { recorded_at: 'desc' },
         },
+        bed_admissions: {
+          orderBy: { admitted_at: 'desc' },
+          include: {
+            bed: { include: { ward: true } },
+            progress_notes: {
+              orderBy: { created_at: 'desc' },
+              include: { doctor: { select: { last_name: true } } }
+            }
+          }
+        },
+        progress_notes: {
+          orderBy: { created_at: 'desc' }
+        },
+        invoices: {
+          orderBy: { created_at: 'desc' },
+          include: {
+            items: true
+          }
+        },
+        lab_orders: {
+          orderBy: { created_at: 'desc' },
+          include: { items: { include: { test: true } } }
+        },
+        prescriptions: {
+          orderBy: { created_at: 'desc' },
+          include: { items: true }
+        }
       },
     });
 
@@ -140,8 +166,13 @@ router.get('/:id', authorize('patients:read'), async (req: Request, res: Respons
       return;
     }
 
-    await cacheSet(CacheKeys.patient(tenantId, id), patient, 300);
-    sendSuccess(res, patient);
+    const mappedPatient = {
+      ...patient,
+      admissions: patient.bed_admissions || []
+    };
+
+    await cacheSet(CacheKeys.patient(tenantId, id), mappedPatient, 300);
+    sendSuccess(res, mappedPatient);
   } catch (error) {
     logger.error('Get patient error', { error });
     sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to fetch patient', 500);
@@ -158,20 +189,30 @@ router.post(
       const data = patientSchema.parse(req.body);
       const tenantId = req.tenantId!;
 
-      // Check MRN uniqueness per tenant
-      const existing = await prisma.patient.findFirst({
-        where: { tenant_id: tenantId, mrn: data.mrn },
-      });
+      let mrn = data.mrn;
 
-      if (existing) {
-        sendError(res, ErrorCodes.CONFLICT, 'MRN already exists for this tenant', 409);
-        return;
+      if (!mrn) {
+        // Auto-generate MRN: P-YYYYMMDD-XXXX (last 4 chars of UUID)
+        const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+        mrn = `P-${date}-${random}`;
+      } else {
+        // Check MRN uniqueness per tenant only if provided
+        const existing = await prisma.patient.findFirst({
+          where: { tenant_id: tenantId, mrn },
+        });
+
+        if (existing) {
+          sendError(res, ErrorCodes.CONFLICT, 'MRN already exists for this tenant', 409);
+          return;
+        }
       }
 
       const patient = await prisma.patient.create({
         data: {
           tenant_id: tenantId,
           ...data,
+          mrn, // Ensure the generated or provided MRN is used
         },
       });
 

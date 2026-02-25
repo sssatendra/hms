@@ -9,18 +9,12 @@ export const prisma =
   new PrismaClient({
     log: config.isDev
       ? [
-          { emit: 'event', level: 'query' },
-          { emit: 'event', level: 'error' },
-          { emit: 'event', level: 'warn' },
-        ]
+        { emit: 'event', level: 'error' },
+        { emit: 'event', level: 'warn' },
+      ]
       : [{ emit: 'event', level: 'error' }],
   });
 
-if (config.isDev) {
-  (prisma as any).$on('query', (e: any) => {
-    logger.debug('Prisma Query', { query: e.query, duration: e.duration });
-  });
-}
 
 (prisma as any).$on('error', (e: any) => {
   logger.error('Prisma Error', { error: e });

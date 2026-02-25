@@ -7,7 +7,8 @@ import { coreApi } from '@/lib/api';
 import { formatDateTime, getStatusColor, cn } from '@/lib/utils';
 import { SkeletonTable } from '@/components/shared/skeleton';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
+import { PatientSearchSelect } from '@/components/shared/PatientSearchSelect';
 
 // ✅ Types
 type Appointment = {
@@ -308,7 +309,7 @@ function AppointmentsPage() {
 
 function AddAppointmentModal({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
-  const { register, handleSubmit, formState: { errors } } = useForm<any>();
+  const { register, handleSubmit, control, formState: { errors } } = useForm<any>();
 
   // Fetch doctors and patients for dropdowns
   const { data: doctorsData } = useQuery({
@@ -316,9 +317,10 @@ function AddAppointmentModal({ onClose }: { onClose: () => void }) {
     queryFn: () => coreApi.get<any[]>('/users?role=DOCTOR'),
   });
 
+  // No longer fetching 100 patients
   const { data: patientsData } = useQuery({
     queryKey: ['patients', 'list'],
-    queryFn: () => coreApi.get<any[]>('/patients?limit=100'),
+    queryFn: () => coreApi.get<any[]>('/patients?limit=5'), // Just a small cache warmer
   });
 
   const createMutation = useMutation({
@@ -343,15 +345,18 @@ function AddAppointmentModal({ onClose }: { onClose: () => void }) {
         <form onSubmit={handleSubmit((data) => createMutation.mutateAsync(data))} className="p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Patient</label>
-            <select
-              {...register('patient_id', { required: true })}
-              className="w-full px-3 py-2 border border-gray-200 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select Patient</option>
-              {patients.map((p: any) => (
-                <option key={p.id} value={p.id}>{p.first_name} {p.last_name} ({p.mrn})</option>
-              ))}
-            </select>
+            <Controller
+              control={control}
+              name="patient_id"
+              rules={{ required: true }}
+              render={({ field }) => (
+                <PatientSearchSelect
+                  onSelect={field.onChange}
+                  className={errors.patient_id ? "ring-2 ring-red-500 rounded-xl" : ""}
+                />
+              )}
+            />
+            {errors.patient_id && <p className="text-xs text-red-500 mt-1">Please select or create a patient</p>}
           </div>
 
           <div>

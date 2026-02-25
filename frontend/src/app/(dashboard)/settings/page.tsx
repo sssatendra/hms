@@ -1,13 +1,51 @@
 'use client';
 
-import { User, Shield, Bell, Building } from 'lucide-react';
+import { User, Shield, Bell, Building, CheckCircle2, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth-store';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { coreApi as api } from '@/lib/api';
 
 export default function SettingsPage() {
-    const { user, tenant } = useAuthStore();
+    const { user, tenant, setUser } = useAuthStore();
     const [activeTab, setActiveTab] = useState('profile');
+
+    const [profileForm, setProfileForm] = useState({
+        first_name: user?.first_name || '',
+        last_name: user?.last_name || '',
+    });
+
+    const [settingsForm, setSettingsForm] = useState({
+        name: tenant?.name || '',
+        currency: tenant?.settings?.currency || 'USD',
+        country: tenant?.settings?.country || 'US',
+    });
+
+    useEffect(() => {
+        if (tenant) {
+            setSettingsForm({
+                name: tenant.name || '',
+                currency: tenant.settings?.currency || 'USD',
+                country: tenant.settings?.country || 'US',
+            });
+        }
+        if (user) {
+            setProfileForm({
+                first_name: user.first_name || '',
+                last_name: user.last_name || '',
+            });
+        }
+    }, [tenant, user]);
+
+    const updateSettingsMutation = useMutation({
+        mutationFn: async (data: any) => api.patch('/tenants/settings', data),
+        onSuccess: (updatedTenant: any) => {
+            if (user) {
+                setUser(user, updatedTenant); // Update global store
+            }
+        }
+    });
 
     const tabs = [
         { id: 'profile', label: 'User Profile', icon: User },
@@ -64,7 +102,8 @@ export default function SettingsPage() {
                                     <label className="text-sm font-medium text-gray-700">First Name</label>
                                     <input
                                         type="text"
-                                        defaultValue={user?.first_name}
+                                        value={profileForm.first_name}
+                                        onChange={(e) => setProfileForm(prev => ({ ...prev, first_name: e.target.value }))}
                                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>
@@ -72,7 +111,8 @@ export default function SettingsPage() {
                                     <label className="text-sm font-medium text-gray-700">Last Name</label>
                                     <input
                                         type="text"
-                                        defaultValue={user?.last_name}
+                                        value={profileForm.last_name}
+                                        onChange={(e) => setProfileForm(prev => ({ ...prev, last_name: e.target.value }))}
                                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>
@@ -101,7 +141,8 @@ export default function SettingsPage() {
                                 <label className="text-sm font-medium text-gray-700">Clinic Name</label>
                                 <input
                                     type="text"
-                                    defaultValue={tenant?.name}
+                                    value={settingsForm.name}
+                                    onChange={(e) => setSettingsForm(prev => ({ ...prev, name: e.target.value }))}
                                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
@@ -118,8 +159,49 @@ export default function SettingsPage() {
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t border-gray-100 flex justify-end">
-                                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                            <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-6">
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-medium text-gray-700">Operating Country</label>
+                                    <select
+                                        value={settingsForm.country}
+                                        onChange={(e) => setSettingsForm(prev => ({ ...prev, country: e.target.value }))}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                    >
+                                        <option value="US">United States</option>
+                                        <option value="IN">India</option>
+                                        <option value="GB">United Kingdom</option>
+                                        <option value="AE">United Arab Emirates</option>
+                                        <option value="EU">European Union</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-medium text-gray-700">Primary Currency</label>
+                                    <select
+                                        value={settingsForm.currency}
+                                        onChange={(e) => setSettingsForm(prev => ({ ...prev, currency: e.target.value }))}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                    >
+                                        <option value="USD">USD ($)</option>
+                                        <option value="INR">INR (₹)</option>
+                                        <option value="GBP">GBP (£)</option>
+                                        <option value="EUR">EUR (€)</option>
+                                        <option value="AED">AED (د.إ)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="pt-4 border-t border-gray-100 flex justify-end items-center gap-4">
+                                {updateSettingsMutation.isSuccess && (
+                                    <span className="text-emerald-600 text-sm flex items-center gap-1.5 animate-in fade-in">
+                                        <CheckCircle2 className="h-4 w-4" /> Saved Successfully
+                                    </span>
+                                )}
+                                <button
+                                    onClick={() => updateSettingsMutation.mutate(settingsForm)}
+                                    disabled={updateSettingsMutation.isPending}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                                >
+                                    {updateSettingsMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                                     Update Clinic
                                 </button>
                             </div>

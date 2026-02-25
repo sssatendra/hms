@@ -20,7 +20,11 @@ export type Permission =
   // Billing
   | 'billing:read' | 'billing:write'
   // Wards
-  | 'wards:read' | 'wards:write';
+  | 'wards:read' | 'wards:write'
+  // Accounting
+  | 'accounting:read' | 'accounting:manage'
+  // Inventory
+  | 'inventory:read' | 'inventory:manage';
 
 // Role → Permissions mapping
 const ROLE_PERMISSIONS: Record<string, Permission[]> = {
@@ -35,6 +39,8 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     'admin:tenants', 'admin:reports', 'admin:settings',
     'billing:read', 'billing:write',
     'wards:read', 'wards:write',
+    'accounting:read', 'accounting:manage',
+    'inventory:read', 'inventory:manage',
   ],
   ADMIN: [
     'users:read', 'users:write',
@@ -47,6 +53,8 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     'admin:reports', 'admin:settings',
     'billing:read', 'billing:write',
     'wards:read', 'wards:write',
+    'accounting:read', 'accounting:manage',
+    'inventory:read', 'inventory:manage',
   ],
   DOCTOR: [
     'patients:read', 'patients:write',
@@ -60,7 +68,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   PHARMACIST: [
     'patients:read',
     'prescriptions:read',
-    'pharmacy:read', 'pharmacy:write', 'pharmacy:dispense', 'pharmacy:manage',
+    'inventory:read', 'inventory:manage',
     'billing:read', 'billing:write',
   ],
   LAB_TECH: [

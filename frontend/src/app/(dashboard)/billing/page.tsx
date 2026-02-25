@@ -7,16 +7,18 @@ import {
     Download, Eye, CreditCard, CheckCircle, AlertCircle, Clock, User, LogOut
 } from 'lucide-react';
 import { coreApi as api } from '@/lib/api';
-import { format } from 'date-fns';
+import { format as formatDate } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useForm } from 'react-hook-form';
 import { Portal } from '@/components/shared/portal';
+import { useCurrency } from '@/hooks/use-currency';
 
 export default function BillingPage() {
     const [search, setSearch] = useState('');
     const [showNewInvoice, setShowNewInvoice] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
     const queryClient = useQueryClient();
+    const { format } = useCurrency();
 
     const { data: invoices, isLoading } = useQuery({
         queryKey: ['invoices'],
@@ -57,19 +59,19 @@ export default function BillingPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-card p-4 rounded-xl border border-border shadow-sm">
                     <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Total Revenue</p>
-                    <p className="text-xl font-bold mt-1">$42,500.00</p>
+                    <p className="text-xl font-bold mt-1">{format(42500)}</p>
                 </div>
                 <div className="bg-card p-4 rounded-xl border border-border shadow-sm">
                     <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Outstanding</p>
-                    <p className="text-xl font-bold mt-1 text-red-500">$12,340.00</p>
+                    <p className="text-xl font-bold mt-1 text-red-500">{format(12340)}</p>
                 </div>
                 <div className="bg-card p-4 rounded-xl border border-border shadow-sm">
                     <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Paid Today</p>
-                    <p className="text-xl font-bold mt-1 text-green-500">$3,200.00</p>
+                    <p className="text-xl font-bold mt-1 text-green-500">{format(3200)}</p>
                 </div>
                 <div className="bg-card p-4 rounded-xl border border-border shadow-sm">
                     <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Pending Claims</p>
-                    <p className="text-xl font-bold mt-1">$5,800.00</p>
+                    <p className="text-xl font-bold mt-1">{format(5800)}</p>
                 </div>
             </div>
 
@@ -118,10 +120,10 @@ export default function BillingPage() {
                                             <span className="text-xs text-muted-foreground">{invoice.patient.mrn}</span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-muted-foreground">{format(new Date(invoice.created_at), 'MMM dd, yyyy')}</td>
-                                    <td className="px-6 py-4 font-medium">${Number(invoice.total).toFixed(2)}</td>
-                                    <td className="px-6 py-4 text-green-600">${Number(invoice.paid_amount).toFixed(2)}</td>
-                                    <td className="px-6 py-4 text-red-500 font-bold">${Number(invoice.balance_due).toFixed(2)}</td>
+                                    <td className="px-6 py-4 text-muted-foreground">{formatDate(new Date(invoice.created_at), 'MMM dd, yyyy')}</td>
+                                    <td className="px-6 py-4 font-medium">{format(invoice.total)}</td>
+                                    <td className="px-6 py-4 text-green-600">{format(invoice.paid_amount)}</td>
+                                    <td className="px-6 py-4 text-red-500 font-bold">{format(invoice.balance_due)}</td>
                                     <td className="px-6 py-4">
                                         <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${getStatusColor(invoice.status)}`}>
                                             {invoice.status.replace('_', ' ')}
@@ -174,7 +176,7 @@ function NewInvoiceModal({ onClose }: any) {
     const [patientId, setPatientId] = useState('');
     const [items, setItems] = useState<any[]>([]);
     const queryClient = useQueryClient();
-
+    const { format } = useCurrency();
     // Load patients for selection
     const { data: patients } = useQuery({ queryKey: ['patients'], queryFn: async () => (await api.get('/patients')).data });
 
@@ -298,19 +300,19 @@ function NewInvoiceModal({ onClose }: any) {
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                                 <span>Subtotal</span>
-                                <span>${subtotal.toFixed(2)}</span>
+                                <span>{format(subtotal)}</span>
                             </div>
                             <div className="flex justify-between text-muted-foreground">
                                 <span>Insurance Coverage</span>
-                                <span>-$0.00</span>
+                                <span>-{format(0)}</span>
                             </div>
                             <div className="flex justify-between text-muted-foreground">
                                 <span>Advance Paid</span>
-                                <span>-${Number(draftData?.total_advance || 0).toFixed(2)}</span>
+                                <span>-{format(draftData?.total_advance || 0)}</span>
                             </div>
                             <div className="border-t border-border pt-2 flex justify-between font-bold text-lg">
                                 <span>Grand Total</span>
-                                <span className="text-primary">${(subtotal - (draftData?.total_advance || 0)).toFixed(2)}</span>
+                                <span className="text-primary">{format(subtotal - (draftData?.total_advance || 0))}</span>
                             </div>
                         </div>
 
@@ -337,6 +339,7 @@ function NewInvoiceModal({ onClose }: any) {
 function InvoiceDetailModal({ id, onClose }: any) {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const queryClient = useQueryClient();
+    const { format } = useCurrency();
 
     const { data: invoice, isLoading, refetch } = useQuery({
         queryKey: ['invoice', id],
@@ -377,7 +380,7 @@ function InvoiceDetailModal({ id, onClose }: any) {
                             </div>
                             <p className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                                 <Calendar className="h-3 w-3" />
-                                {format(new Date(invoice.created_at), 'MMMM dd, yyyy • HH:mm')}
+                                {formatDate(new Date(invoice.created_at), 'MMMM dd, yyyy • HH:mm')}
                             </p>
                         </div>
                         <div className="text-right md:text-right">
@@ -421,7 +424,7 @@ function InvoiceDetailModal({ id, onClose }: any) {
                                     <tr key={item.id} className="group transition-colors">
                                         <td className="py-2 text-xs font-bold text-foreground/80 group-hover:text-primary transition-colors">{item.description}</td>
                                         <td className="py-2 text-center text-[10px] font-black">{item.quantity}</td>
-                                        <td className="py-2 text-right text-xs font-black text-foreground">${Number(item.total).toFixed(2)}</td>
+                                        <td className="py-2 text-right text-xs font-black text-foreground">{format(item.total)}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -457,23 +460,23 @@ function InvoiceDetailModal({ id, onClose }: any) {
                         <div className="w-full md:w-64 space-y-2 bg-muted/20 p-4 rounded-xl border border-border/50">
                             <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-widest">
                                 <span>Subtotal</span>
-                                <span className="text-foreground">${Number(invoice.subtotal).toFixed(2)}</span>
+                                <span className="text-foreground">{format(invoice.subtotal)}</span>
                             </div>
                             {Number(invoice.advance_paid) > 0 && (
                                 <div className="flex justify-between items-center text-xs font-bold text-blue-600 uppercase tracking-widest">
                                     <span>Advance Paid</span>
-                                    <span>-${Number(invoice.advance_paid).toFixed(2)}</span>
+                                    <span>-{format(invoice.advance_paid)}</span>
                                 </div>
                             )}
                             {Number(invoice.paid_amount) > 0 && (
                                 <div className="flex justify-between items-center text-xs font-bold text-green-600 uppercase tracking-widest">
                                     <span>Paid Amount</span>
-                                    <span>-${Number(invoice.paid_amount).toFixed(2)}</span>
+                                    <span>-{format(invoice.paid_amount)}</span>
                                 </div>
                             )}
                             <div className="pt-3 mt-3 border-t border-border flex justify-between items-center">
                                 <span className="text-[10px] font-black uppercase text-primary tracking-tighter">BALANCE DUE</span>
-                                <span className="text-2xl font-black text-primary">${Number(invoice.balance_due).toFixed(2)}</span>
+                                <span className="text-2xl font-black text-primary">{format(invoice.balance_due)}</span>
                             </div>
                         </div>
                     </div>
@@ -505,6 +508,8 @@ function PaymentModal({ invoice, onClose }: { invoice: any, onClose: () => void 
         }
     });
 
+    const { format, currency } = useCurrency();
+
     const paymentMutation = useMutation({
         mutationFn: (data: any) => api.post(`/billing/invoices/${invoice.id}/payments`, data),
         onSuccess: () => onClose()
@@ -519,14 +524,14 @@ function PaymentModal({ invoice, onClose }: { invoice: any, onClose: () => void 
                 </div>
                 <form onSubmit={handleSubmit((data) => paymentMutation.mutate({ ...data, amount: Number(data.amount) }))} className="p-8 space-y-6">
                     <div>
-                        <label className="block text-xs font-black uppercase tracking-widest text-muted-foreground mb-2">Amount to Pay ($)</label>
+                        <label className="block text-xs font-black uppercase tracking-widest text-muted-foreground mb-2">Amount to Pay ({currency})</label>
                         <input
                             type="number"
                             step="0.01"
                             {...register('amount', { required: true })}
                             className="w-full px-5 py-3 bg-background border border-border rounded-xl text-xl font-black text-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all"
                         />
-                        <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-tighter">Remaining: ${Number(invoice.balance_due).toFixed(2)}</p>
+                        <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-tighter">Remaining: {format(invoice.balance_due)}</p>
                     </div>
 
                     <div>

@@ -13,6 +13,8 @@ const router = Router();
 // All routes require auth
 router.use(authenticate);
 
+const castReq = (req: any) => req;
+
 const wardSchema = z.object({
     name: z.string().min(1),
     code: z.string().min(1),
@@ -59,7 +61,7 @@ const noteSchema = z.object({
 });
 
 // WARD ROUTES
-router.get('/', authorize('wards:read'), async (req: Request, res: Response) => {
+router.get('/', authorize('wards:read'), async (req: any, res: Response) => {
     try {
         const wards = await prisma.ward.findMany({
             where: { tenant_id: req.tenantId!, is_active: true },
@@ -93,6 +95,13 @@ router.post('/', authorize('wards:write'), auditMiddleware({ resource: 'ward', a
         const data = wardSchema.parse(req.body);
         const tenantId = req.tenantId!;
 
+        const existingWard = await prisma.ward.findFirst({
+            where: { tenant_id: tenantId, code: data.code }
+        });
+        if (existingWard) {
+            return sendError(res, ErrorCodes.CONFLICT, 'A ward with this code already exists', 409);
+        }
+
         const ward = await prisma.$transaction(async (tx) => {
             const newWard = await tx.ward.create({
                 data: {
@@ -115,7 +124,7 @@ router.post('/', authorize('wards:write'), auditMiddleware({ resource: 'ward', a
             }));
 
             await tx.bed.createMany({
-                data: bedsData
+                data: bedsData as any
             });
 
             return newWard;
@@ -129,7 +138,7 @@ router.post('/', authorize('wards:write'), auditMiddleware({ resource: 'ward', a
     }
 });
 
-router.delete('/:id', authorize('wards:write'), auditMiddleware({ resource: 'ward', action: 'DELETE' }), async (req: Request, res: Response) => {
+router.delete('/:id', authorize('wards:write'), auditMiddleware({ resource: 'ward', action: 'DELETE' }), async (req: any, res: Response) => {
     try {
         const { id } = req.params;
         const tenantId = req.tenantId!;
@@ -168,7 +177,7 @@ router.delete('/:id', authorize('wards:write'), auditMiddleware({ resource: 'war
     }
 });
 
-router.patch('/:id', authorize('wards:write'), auditMiddleware({ resource: 'ward', action: 'UPDATE' }), async (req: Request, res: Response) => {
+router.patch('/:id', authorize('wards:write'), auditMiddleware({ resource: 'ward', action: 'UPDATE' }), async (req: any, res: Response) => {
     try {
         const { id } = req.params;
         const tenantId = req.tenantId!;
@@ -195,7 +204,7 @@ router.patch('/:id', authorize('wards:write'), auditMiddleware({ resource: 'ward
 });
 
 // BED ROUTES
-router.post('/beds', authorize('wards:write'), async (req: Request, res: Response) => {
+router.post('/beds', authorize('wards:write'), async (req: any, res: Response) => {
     try {
         const data = bedSchema.parse(req.body);
         const bed = await prisma.bed.create({
@@ -209,7 +218,7 @@ router.post('/beds', authorize('wards:write'), async (req: Request, res: Respons
 });
 
 // ADMISSION ROUTES
-router.post('/admissions', authorize('wards:write'), async (req: Request, res: Response) => {
+router.post('/admissions', authorize('wards:write'), async (req: any, res: Response) => {
     try {
         const data = admissionSchema.parse(req.body);
         const tenantId = req.tenantId!;
@@ -250,63 +259,74 @@ router.post('/admissions', authorize('wards:write'), async (req: Request, res: R
 });
 
 // TRANSFER ROUTES
-router.post('/admissions/:id/transfer', authorize('wards:write'), async (req: Request, res: Response) => {
+router.post('/admissions/:id/transfer', authorize('wards:write'), auditMiddleware({ resource: 'admission', action: 'UPDATE' }), async (req: any, res: Response) => {
     try {
         const { id } = req.params; // Current admission ID
-        const { new_bed_id, notes } = z.object({ new_bed_id: z.string().uuid(), notes: z.string().optional() }).parse(req.body);
+        const { new_bed_id, notes } = z.object({
+            new_bed_id: z.string().uuid(),
+            notes: z.string().optional()
+        }).parse(req.body);
         const tenantId = req.tenantId!;
 
         const currentAdmission = await prisma.bedAdmission.findUnique({
             where: { id, tenant_id: tenantId },
-            include: { bed: true }
+            include: { bed: { include: { ward: true } } }
         });
 
         if (!currentAdmission || currentAdmission.discharged_at) {
             return sendError(res, ErrorCodes.BAD_REQUEST, 'Admission not found or already discharged', 400);
         }
 
-        const newBed = await prisma.bed.findFirst({ where: { id: new_bed_id, tenant_id: tenantId } });
+        const newBed = await prisma.bed.findFirst({
+            where: { id: new_bed_id, tenant_id: tenantId },
+            include: { ward: true }
+        });
+
         if (!newBed || newBed.status !== 'AVAILABLE') {
             return sendError(res, ErrorCodes.BAD_REQUEST, 'New bed is not available', 400);
         }
 
-        const transfer = await prisma.$transaction(async (tx) => {
-            // 1. Discharge from current bed
-            await tx.bedAdmission.update({
-                where: { id },
-                data: {
-                    discharged_at: new Date(),
-                    discharge_notes: `Transferred to bed ${newBed.bed_number}. ${notes || ''}`,
-                    discharged_by: req.user!.userId
-                }
-            });
-
+        const updatedAdmission = await prisma.$transaction(async (tx) => {
+            // 1. Mark current bed as AVAILABLE
             await tx.bed.update({
                 where: { id: currentAdmission.bed_id },
                 data: { status: 'AVAILABLE' }
             });
 
-            // 2. Create new admission record for the new bed
-            const new_admission = await tx.bedAdmission.create({
-                data: {
-                    tenant_id: tenantId,
-                    patient_id: currentAdmission.patient_id,
-                    bed_id: new_bed_id,
-                    admission_notes: `Transferred from bed ${currentAdmission.bed.bed_number}. ${notes || ''}`,
-                    diagnosis_on_admission: currentAdmission.diagnosis_on_admission,
-                    admitted_by: req.user!.userId
-                }
-            });
-
+            // 2. Mark new bed as OCCUPIED
             await tx.bed.update({
                 where: { id: new_bed_id },
                 data: { status: 'OCCUPIED' }
             });
 
-            return new_admission;
+            // 3. Update existing admission with new bed
+            const updated = await tx.bedAdmission.update({
+                where: { id },
+                data: {
+                    bed_id: new_bed_id,
+                },
+                include: {
+                    patient: true,
+                    bed: { include: { ward: true } }
+                }
+            });
+
+            // 4. Create an automatic progress note to record the transfer history
+            await tx.progressNote.create({
+                data: {
+                    tenant_id: tenantId,
+                    admission_id: id,
+                    patient_id: currentAdmission.patient_id,
+                    doctor_id: req.user!.userId,
+                    category: 'NURSING',
+                    note: `SYSTEM: Patient transferred from ${currentAdmission.bed.ward.name} (${currentAdmission.bed.bed_number}) to ${newBed.ward.name} (${newBed.bed_number}). Reason: ${notes || 'Not specified'}`
+                }
+            });
+
+            return updated;
         });
 
-        sendSuccess(res, transfer, 200, { message: 'Transfer successful' });
+        sendSuccess(res, { message: 'Transfer successful', admission: updatedAdmission });
     } catch (error: any) {
         if (error instanceof z.ZodError) return sendError(res, ErrorCodes.VALIDATION_ERROR, 'Validation failed', 400, error.errors);
         logger.error('Transfer error', { error });
@@ -315,7 +335,7 @@ router.post('/admissions/:id/transfer', authorize('wards:write'), async (req: Re
 });
 
 // DISCHARGE ROUTES
-router.post('/admissions/:id/discharge', authorize('wards:write'), async (req: Request, res: Response) => {
+router.post('/admissions/:id/discharge', authorize('wards:write'), async (req: any, res: Response) => {
     try {
         const { id } = req.params;
         const { notes } = z.object({ notes: z.string().optional() }).parse(req.body);
@@ -352,7 +372,7 @@ router.post('/admissions/:id/discharge', authorize('wards:write'), async (req: R
 });
 
 // ADMISSION DETAIL & CHARGES
-router.get('/admissions/:id', authorize('wards:read'), async (req: Request, res: Response) => {
+router.get('/admissions/:id', authorize('wards:read'), async (req: any, res: Response) => {
     try {
         const { id } = req.params;
         const tenantId = req.tenantId!;
@@ -396,7 +416,7 @@ router.get('/admissions/:id', authorize('wards:read'), async (req: Request, res:
     }
 });
 
-router.post('/admissions/:id/charges', authorize('wards:write'), async (req: Request, res: Response) => {
+router.post('/admissions/:id/charges', authorize('wards:write'), async (req: any, res: Response) => {
     try {
         const { id } = req.params;
         const data = chargeSchema.parse(req.body);
@@ -427,7 +447,7 @@ router.post('/admissions/:id/charges', authorize('wards:write'), async (req: Req
     }
 });
 
-router.delete('/admissions/:id/charges/:chargeId', authorize('wards:write'), async (req: Request, res: Response) => {
+router.delete('/admissions/:id/charges/:chargeId', authorize('wards:write'), async (req: any, res: Response) => {
     try {
         const { id, chargeId } = req.params;
         const tenantId = req.tenantId!;
@@ -443,7 +463,7 @@ router.delete('/admissions/:id/charges/:chargeId', authorize('wards:write'), asy
     }
 });
 
-router.patch('/admissions/:id/charges/:chargeId', authorize('wards:write'), async (req: Request, res: Response) => {
+router.patch('/admissions/:id/charges/:chargeId', authorize('wards:write'), async (req: any, res: Response) => {
     try {
         const { id, chargeId } = req.params;
         const tenantId = req.tenantId!;
@@ -480,7 +500,7 @@ const vitalsSchema = z.object({
     notes: z.string().optional(),
 });
 
-router.post('/admissions/:id/vitals', authorize('wards:write'), async (req: Request, res: Response) => {
+router.post('/admissions/:id/vitals', authorize('wards:write'), async (req: any, res: Response) => {
     try {
         const { id } = req.params;
         const tenantId = req.tenantId!;
@@ -494,14 +514,14 @@ router.post('/admissions/:id/vitals', authorize('wards:write'), async (req: Requ
                 tenant_id: tenantId,
                 admission_id: id,
                 patient_id: admission.patient_id,
-                temperature: data.temperature ? new Decimal(data.temperature) : null,
+                temperature: data.temperature || null,
                 blood_pressure_systolic: data.blood_pressure_systolic,
                 blood_pressure_diastolic: data.blood_pressure_diastolic,
                 pulse_rate: data.pulse_rate,
                 respiratory_rate: data.respiratory_rate,
-                oxygen_saturation: data.oxygen_saturation ? new Decimal(data.oxygen_saturation) : null,
-                weight: data.weight ? new Decimal(data.weight) : null,
-                height: data.height ? new Decimal(data.height) : null,
+                oxygen_saturation: data.oxygen_saturation || null,
+                weight: data.weight || null,
+                height: data.height || null,
                 recorded_by: req.user!.userId
             }
         });
@@ -514,7 +534,7 @@ router.post('/admissions/:id/vitals', authorize('wards:write'), async (req: Requ
     }
 });
 
-router.post('/admissions/:id/charges/:chargeId/approve', authorize('wards:write'), async (req: Request, res: Response) => {
+router.post('/admissions/:id/charges/:chargeId/approve', authorize('wards:write'), async (req: any, res: Response) => {
     try {
         const { id, chargeId } = req.params;
         const tenantId = req.tenantId!;
@@ -541,7 +561,7 @@ router.post('/admissions/:id/charges/:chargeId/approve', authorize('wards:write'
     }
 });
 
-router.post('/admissions/:id/notes', authorize('wards:write'), async (req: Request, res: Response) => {
+router.post('/admissions/:id/notes', authorize('wards:write'), async (req: any, res: Response) => {
     try {
         const { id } = req.params;
         const data = noteSchema.parse(req.body);
@@ -568,7 +588,7 @@ router.post('/admissions/:id/notes', authorize('wards:write'), async (req: Reque
     }
 });
 
-router.post('/admissions/:id/payments', authorize('wards:write'), async (req: Request, res: Response) => {
+router.post('/admissions/:id/payments', authorize('wards:write'), async (req: any, res: Response) => {
     try {
         const { id } = req.params;
         const data = paymentSchema.parse(req.body);

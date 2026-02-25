@@ -37,6 +37,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+.*
 
 # MinIO data (local dev)
 minio_data/

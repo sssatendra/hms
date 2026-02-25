@@ -10,10 +10,12 @@ import { coreApi as api } from '@/lib/api';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { useCurrency } from '@/hooks/use-currency';
 
 function PatientRecordsPage() {
     const { id } = useParams();
     const router = useRouter();
+    const { format: formatCurrency } = useCurrency();
 
     const { data: patient, isLoading } = useQuery({
         queryKey: ['patient-records', id],
@@ -62,7 +64,7 @@ function PatientRecordsPage() {
                 {[
                     { label: 'Total Admissions', value: patient.admissions?.length || 0, icon: Stethoscope, color: 'text-blue-500', bg: 'bg-blue-50' },
                     { label: 'Clinical Notes', value: patient.progress_notes?.length || 0, icon: FileText, color: 'text-purple-500', bg: 'bg-purple-50' },
-                    { label: 'Total Invoiced', value: `$${patient.invoices?.reduce((s: any, i: any) => s + Number(i.total), 0).toFixed(2)}`, icon: BadgeIndianRupee, color: 'text-green-500', bg: 'bg-green-50' },
+                    { label: 'Total Invoiced', value: formatCurrency(patient.invoices?.reduce((s: any, i: any) => s + Number(i.total), 0)), icon: BadgeIndianRupee, color: 'text-green-500', bg: 'bg-green-50' },
                     { label: 'Last Visit', value: patient.admissions?.[0] ? format(new Date(patient.admissions[0].admitted_at), 'MMM dd') : 'Never', icon: Clock, color: 'text-orange-500', bg: 'bg-orange-50' },
                 ].map((stat, i) => (
                     <div key={i} className="p-6 bg-card rounded-3xl border border-border shadow-sm hover:shadow-md transition-all">
@@ -159,7 +161,7 @@ function PatientRecordsPage() {
                                         <p className="text-[10px] text-muted-foreground font-bold">{format(new Date(inv.created_at), 'MMM dd, yyyy')}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-black text-sm">${Number(inv.total).toFixed(2)}</p>
+                                        <p className="font-black text-sm">{formatCurrency(inv.total)}</p>
                                         <span className={cn(
                                             "text-[9px] font-black uppercase",
                                             inv.status === 'PAID' ? "text-green-600" : "text-orange-600"

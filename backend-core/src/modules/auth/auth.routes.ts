@@ -342,6 +342,7 @@ router.get('/me', authenticate, async (req: Request, res: Response): Promise<voi
         status: true,
         specialization: true,
         license_number: true,
+        tenant_id: true,
         role: { select: { name: true } },
         department: { select: { id: true, name: true } },
       },
@@ -352,7 +353,24 @@ router.get('/me', authenticate, async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    sendSuccess(res, user);
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: user.tenant_id },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        logo_url: true,
+        settings: true,
+      }
+    });
+
+    // Need to restructure user slightly so `role` is a string to match the frontend `User` interface
+    const formattedUser = {
+      ...user,
+      role: user.role.name
+    };
+
+    sendSuccess(res, { user: formattedUser, tenant });
   } catch (error) {
     logger.error('Get me error', { error });
     sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to get user', 500);

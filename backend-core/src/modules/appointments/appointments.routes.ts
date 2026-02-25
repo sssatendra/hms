@@ -228,7 +228,7 @@ router.get('/queue/today', authorize('appointments:read'), async (req: Request, 
     orderBy: { scheduled_at: 'asc' }
   });
 
-  const enriched = queue.map((apt:any, index:number) => ({
+  const enriched = queue.map((apt: any, index: number) => ({
     ...apt,
     token_number: index + 1,
     estimated_wait_mins: index * 15 // 15 min per patient
@@ -252,7 +252,7 @@ router.patch('/:id/call-next', authorize('appointments:write'), async (req: Requ
 // GET /api/v1/appointments/available-slots
 router.get('/available-slots', async (req: Request, res: Response) => {
   const { doctor_id, date } = req.query;
-  
+
   const startDate = new Date(date as string);
   startDate.setHours(9, 0, 0, 0); // 9 AM
   const endDate = new Date(date as string);
@@ -261,7 +261,7 @@ router.get('/available-slots', async (req: Request, res: Response) => {
   // Get doctor's schedule
   const dayOfWeek = startDate.getDay();
   const schedule = await prisma.staffSchedule.findFirst({
-    where: { user_id: doctor_id, day_of_week: dayOfWeek, is_active: true }
+    where: { user_id: doctor_id as string, day_of_week: dayOfWeek, is_active: true }
   });
 
   if (!schedule) {
@@ -271,7 +271,7 @@ router.get('/available-slots', async (req: Request, res: Response) => {
   // Get booked appointments
   const booked = await prisma.appointment.findMany({
     where: {
-      doctor_id,
+      doctor_id: doctor_id as string,
       scheduled_at: { gte: startDate, lte: endDate },
       status: { in: ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS'] }
     },

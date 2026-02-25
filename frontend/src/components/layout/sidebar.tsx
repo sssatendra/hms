@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, CalendarDays, FileText, Pill,
-  FlaskConical, Settings, ChevronRight, Building2
+  FlaskConical, Settings, ChevronRight, Building2,
+  Package, Wallet
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth-store';
 import { hasPermission } from '@/lib/auth-store';
@@ -25,6 +26,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'EMR & Notes', href: '/emr', icon: FileText, permission: 'emr:read' },
   { label: 'Pharmacy', href: '/pharmacy', icon: Pill, permission: 'pharmacy:read' },
   { label: 'Laboratory', href: '/lab', icon: FlaskConical, permission: 'lab:read' },
+  { label: 'Inventory', href: '/inventory', icon: Package, permission: 'inventory:read' },
+  { label: 'Accounting', href: '/accounting', icon: Wallet, permission: 'accounting:read' },
   { label: 'Admissions & Wards', href: '/wards', icon: Building2, permission: 'wards:read' },
   { label: 'Billing', href: '/billing', icon: FileText, permission: 'billing:read' },
 ];

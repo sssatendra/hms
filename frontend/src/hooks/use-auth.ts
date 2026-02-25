@@ -31,6 +31,13 @@ export function useAuth() {
     }
   }, [meError, isAuthenticated, clearAuth, queryClient, router]);
 
+  // Sync latest user and tenant data to store on load
+  useEffect(() => {
+    if (meData?.data?.user && meData?.data?.tenant && isAuthenticated) {
+      setUser(meData.data.user, meData.data.tenant);
+    }
+  }, [meData, isAuthenticated, setUser]);
+
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: (data: { email: string; password: string; tenant_slug: string }) =>
