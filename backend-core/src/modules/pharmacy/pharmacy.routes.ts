@@ -258,16 +258,26 @@ router.get('/inventory', authorize('pharmacy:read'), async (req: Request, res: R
 
     // 4. Transform and Filter Data
     let processedItems = items.map(item => {
-      const totalQuantity = item.stocks.reduce((sum, s) => sum + Number(s.quantity), 0);
-      let calculatedStatus = 'IN_STOCK';
+      const stocks = item.stocks || [];
+      const totalQuantity = stocks.reduce((sum, s) => sum + Number(s.quantity), 0);
+      const primaryStock = stocks[0] || null;
 
+      let calculatedStatus = 'IN_STOCK';
       if (totalQuantity === 0) calculatedStatus = 'OUT_OF_STOCK';
       else if (totalQuantity < 20) calculatedStatus = 'LOW_STOCK';
 
       return {
         ...item,
+        drug_name: item.name, // Map name to drug_name for frontend
+        generic_name: item.description, // Use description as generic_name fallback
         total_quantity: totalQuantity,
-        stock_status: calculatedStatus
+        stock_status: calculatedStatus,
+        // Flatten primary stock for frontend compatibility
+        batch_number: primaryStock?.batch_number,
+        expiry_date: primaryStock?.expiry_date,
+        unit_cost: primaryStock?.unit_cost,
+        selling_price: primaryStock?.selling_price,
+        stock_quantity: totalQuantity, // alias for total_quantity
       };
     });
 

@@ -47,45 +47,53 @@ const features = [
 
 export function LandingFeatures() {
     return (
-        <section id="features" className="py-32 bg-white">
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Unrivaled Power</h2>
-                    <p className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tighter">Everything you need to run <br /> a modern medical facility.</p>
-                    <p className="text-lg text-slate-600 font-medium">Native modules built from the ground up to talk to each other. No more silos.</p>
+        <section id="features" className="py-16 bg-white font-fira-sans relative overflow-hidden text-slate-900">
+            {/* Ambient Depth Elements */}
+            <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-50/50 rounded-full blur-[100px] -ml-40" />
+            
+            <div className="max-w-7xl mx-auto px-10 relative z-10">
+                <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+                    <h2 className="text-[8px] font-black uppercase tracking-[0.3em] text-emerald-600 font-fira-code">Unrivaled Clinical Power</h2>
+                    <p className="text-2xl lg:text-3xl font-black text-slate-800 tracking-tighter uppercase leading-[1.1]">Orchestrate Every <span className="text-emerald-950">Medical</span> Node.</p>
+                    <p className="text-base text-slate-400 font-semibold tracking-tight">Native modules built on a high-resolution data fabric. No more clinical silos.</p>
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {features.map((f, i) => (
                         <div
                             key={f.title}
-                            className="group p-8 bg-slate-50 border border-slate-100 rounded-[32px] hover:bg-white hover:shadow-2xl hover:shadow-slate-200/50 transition-all hover:-translate-y-2 duration-300"
+                            className="group p-5 bg-white/70 backdrop-blur-2xl border border-emerald-100/30 rounded-2xl hover:bg-white transition-all duration-500 hover:-translate-y-1 shadow-lg shadow-emerald-500/5"
                         >
                             <div className={cn(
-                                "w-14 h-14 rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg shadow-primary/10 transition-transform group-hover:scale-110 group-hover:rotate-3",
-                                f.color
+                                "w-10 h-10 rounded-xl flex items-center justify-center text-white mb-4 shadow-lg transition-all duration-500 group-hover:rotate-6 group-hover:scale-105",
+                                f.color.replace('bg-', 'bg-gradient-to-br from-').replace('500', '600') + " to-" + f.color.replace('bg-', '').replace('500', '800')
                             )}>
-                                <f.icon size={28} />
+                                <f.icon size={20} />
                             </div>
-                            <h3 className="text-xl font-black text-slate-900 mb-3 tracking-tight">{f.title}</h3>
-                            <p className="text-slate-600 font-medium leading-relaxed">{f.description}</p>
+                            <h3 className="text-lg font-black text-slate-900 mb-1.5 tracking-tight uppercase font-fira-sans">{f.title}</h3>
+                            <p className="text-xs text-slate-500 font-semibold leading-relaxed tracking-tight">{f.description}</p>
                         </div>
                     ))}
                 </div>
 
-                {/* Global Stats/Trust Bar */}
-                <div className="mt-32 p-12 bg-slate-900 rounded-[48px] relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-8 text-white/5"><Building2 size={120} /></div>
-                    <div className="grid md:grid-cols-4 gap-12 text-center">
+                {/* Global Intelligence Bar */}
+                <div className="mt-16 p-6 bg-emerald-950 rounded-2xl relative overflow-hidden shadow-xl shadow-emerald-900/30">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-emerald-900 to-transparent opacity-50" />
+                    <div className="absolute top-0 right-0 p-8 text-emerald-800/5"><Building2 size={120} /></div>
+                    
+                    <div className="relative z-10 grid md:grid-cols-4 gap-6 text-center">
                         {[
-                            { l: 'Patient Records', v: '2M+' },
-                            { l: 'Daily Appointments', v: '150k+' },
-                            { l: 'Pharmacy Sales', v: '₹85Cr' },
-                            { l: 'Hospitals Active', v: '120+' },
+                            { l: 'Patient Records', v: '2.4M+', sub: 'Verified Data' },
+                            { l: 'Daily Analysis', v: '180k+', sub: 'Active Queries' },
+                            { l: 'Diagnostic Sales', v: '₹95Cr', sub: 'Revenue Processed' },
+                            { l: 'Hospitals Active', v: '140+', sub: 'Clinical Nodes' },
                         ].map(s => (
-                            <div key={s.l} className="space-y-2">
-                                <p className="text-4xl font-black text-white">{s.v}</p>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{s.l}</p>
+                            <div key={s.l} className="space-y-1">
+                                <p className="text-2xl font-black text-white tracking-tighter">{s.v}</p>
+                                <div>
+                                    <p className="text-[7px] font-black uppercase tracking-[0.2em] text-emerald-400 font-fira-code">{s.l}</p>
+                                    <p className="text-[7px] font-black uppercase tracking-widest text-emerald-600/50 mt-0.5 font-fira-code">{s.sub}</p>
+                                </div>
                             </div>
                         ))}
                     </div>

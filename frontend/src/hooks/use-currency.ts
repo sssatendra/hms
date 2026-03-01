@@ -13,7 +13,7 @@ export function useCurrency() {
             case 'IN': return 'en-IN';
             case 'UK':
             case 'GB': return 'en-GB';
-            case 'AE': return 'ar-AE';
+            case 'AE': return 'en-AE'; // Using English-UAE for cleaner 'AED' symbol in English UI
             case 'EU': return 'de-DE'; // Generic EU fallback
             case 'US':
             default: return 'en-US';

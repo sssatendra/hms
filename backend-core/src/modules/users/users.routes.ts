@@ -25,6 +25,18 @@ const createUserSchema = z.object({
   employee_id: z.string().optional(),
 });
 
+const updateUserSchema = z.object({
+  first_name: z.string().min(1).optional(),
+  last_name: z.string().min(1).optional(),
+  phone: z.string().optional(),
+  department_id: z.string().uuid().optional(),
+  specialization: z.string().optional(),
+  license_number: z.string().optional(),
+  employee_id: z.string().optional(),
+  availability_status: z.enum(['AVAILABLE', 'ON_BREAK', 'OFF_DUTY']).optional(),
+  skills: z.union([z.string(), z.array(z.string())]).optional(),
+});
+
 // GET /api/v1/users
 router.get('/', authorize('users:read'), async (req: Request, res: Response): Promise<void> => {
   try {
@@ -60,6 +72,8 @@ router.get('/', authorize('users:read'), async (req: Request, res: Response): Pr
           status: true,
           avatar_url: true,
           specialization: true,
+          availability_status: true,
+          skills: true,
           employee_id: true,
           last_login_at: true,
           created_at: true,
@@ -163,6 +177,56 @@ router.patch('/:id/status', authorize('users:write'), async (req: Request, res: 
     sendSuccess(res, { message: 'User status updated' });
   } catch (error) {
     sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to update user status', 500);
+  }
+});
+
+// PUT /api/v1/users/:id
+router.put('/:id', authorize('users:write'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const tenantId = req.tenantId!;
+    const data = updateUserSchema.parse(req.body);
+
+    const user = await prisma.user.findFirst({ where: { id, tenant_id: tenantId } });
+    if (!user) {
+      sendError(res, ErrorCodes.NOT_FOUND, 'User not found', 404);
+      return;
+    }
+
+    // Handle skills conversion if necessary
+    const updateData: any = { ...data };
+    if (data.skills && typeof data.skills === 'string') {
+      updateData.skills = data.skills.split(',').map(s => s.trim()).filter(Boolean);
+    }
+
+    const updated = await prisma.user.update({
+      where: { id },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        first_name: true,
+        last_name: true,
+        phone: true,
+        status: true,
+        specialization: true,
+        availability_status: true,
+        skills: true,
+        employee_id: true,
+        role: { select: { name: true } },
+        department: { select: { name: true } },
+      },
+    });
+
+    await cacheDel(CacheKeys.user(tenantId, id));
+    sendSuccess(res, updated);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      sendError(res, ErrorCodes.VALIDATION_ERROR, 'Validation failed', 400, error.errors);
+      return;
+    }
+    logger.error('Update user error', { error });
+    sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to update user', 500);
   }
 });
 

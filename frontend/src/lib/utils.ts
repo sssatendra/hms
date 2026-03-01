@@ -6,26 +6,47 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(date: string | Date, fmt = 'MMM dd, yyyy'): string {
-  const d = typeof date === 'string' ? parseISO(date) : date;
-  return format(d, fmt);
+export function formatDate(date: string | Date | null | undefined, fmt = 'MMM dd, yyyy'): string {
+  if (!date) return 'N/A';
+  try {
+    const d = typeof date === 'string' ? parseISO(date) : date;
+    if (!d || isNaN(d.getTime())) return 'N/A';
+    return format(d, fmt);
+  } catch (e) {
+    return 'N/A';
+  }
 }
 
-export function formatDateTime(date: string | Date): string {
-  const d = typeof date === 'string' ? parseISO(date) : date;
-  return format(d, 'MMM dd, yyyy HH:mm');
+export function formatDateTime(date: string | Date | null | undefined): string {
+  if (!date) return 'N/A';
+  try {
+    const d = typeof date === 'string' ? parseISO(date) : date;
+    if (!d || isNaN(d.getTime())) return 'N/A';
+    return format(d, 'MMM dd, yyyy HH:mm');
+  } catch (e) {
+    return 'N/A';
+  }
 }
 
-export function formatTimeAgo(date: string | Date): string {
-  const d = typeof date === 'string' ? parseISO(date) : date;
-  return formatDistanceToNow(d, { addSuffix: true });
+export function formatTimeAgo(date: string | Date | null | undefined): string {
+  if (!date) return 'N/A';
+  try {
+    const d = typeof date === 'string' ? parseISO(date) : date;
+    if (!d || isNaN(d.getTime())) return 'N/A';
+    return formatDistanceToNow(d, { addSuffix: true });
+  } catch (e) {
+    return 'N/A';
+  }
 }
 
-export function formatCurrency(amount: number | string, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
+export function formatCurrency(amount: number | string | null | undefined, currency = 'USD', locale = 'en-US'): string {
+  if (amount === null || amount === undefined) return 'N/A';
+  const val = Number(amount);
+  if (isNaN(val)) return 'N/A';
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
-  }).format(Number(amount));
+  }).format(val);
 }
 
 export function formatAge(dateOfBirth: string | Date): string {

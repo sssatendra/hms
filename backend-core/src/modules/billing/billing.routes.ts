@@ -142,6 +142,14 @@ router.post('/checkout', authorize('billing:write'), auditMiddleware({ resource:
                 });
             }
 
+            const admissionIds = data.items.map(i => i.admission_id).filter(id => !!id) as string[];
+            if (admissionIds.length > 0) {
+                await tx.bedAdmission.updateMany({
+                    where: { id: { in: admissionIds } },
+                    data: { is_invoiced: true }
+                });
+            }
+
             const logIds = data.items.map(i => i.dispensing_log_id).filter(id => !!id) as string[];
             if (logIds.length > 0) {
                 await tx.dispensingLog.updateMany({
@@ -230,7 +238,7 @@ router.get('/draft/:patientId', authorize('billing:read'), async (req: Request, 
         const { patientId } = req.params;
         const tenantId = req.tenantId!;
         const admissions = await prisma.bedAdmission.findMany({
-            where: { patient_id: patientId, tenant_id: tenantId },
+            where: { patient_id: patientId, tenant_id: tenantId, is_invoiced: false },
             include: { bed: { include: { ward: true } } }
         });
         const charges = await prisma.patientCharge.findMany({

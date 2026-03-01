@@ -299,11 +299,26 @@ router.post('/admissions/:id/transfer', authorize('wards:write'), auditMiddlewar
                 data: { status: 'OCCUPIED' }
             });
 
-            // 3. Update existing admission with new bed
-            const updated = await tx.bedAdmission.update({
+            // 3. Close existing admission
+            await tx.bedAdmission.update({
                 where: { id },
                 data: {
+                    discharged_at: new Date(),
+                    discharge_notes: `SYSTEM: Patient transferred to ${newBed.ward.name} (${newBed.bed_number}). ${notes || ''}`,
+                    discharged_by: req.user!.userId
+                }
+            });
+
+            // 4. Create NEW admission for the new bed
+            const new_admission = await tx.bedAdmission.create({
+                data: {
+                    tenant_id: tenantId,
+                    patient_id: currentAdmission.patient_id,
                     bed_id: new_bed_id,
+                    admission_notes: `SYSTEM: Transferred from ${currentAdmission.bed.ward.name} (${currentAdmission.bed.bed_number}). ${notes || ''}`,
+                    diagnosis_on_admission: currentAdmission.diagnosis_on_admission,
+                    advance_paid: 0,
+                    admitted_by: req.user!.userId
                 },
                 include: {
                     patient: true,
@@ -311,11 +326,11 @@ router.post('/admissions/:id/transfer', authorize('wards:write'), auditMiddlewar
                 }
             });
 
-            // 4. Create an automatic progress note to record the transfer history
+            // 5. Create an automatic progress note to record the transfer history
             await tx.progressNote.create({
                 data: {
                     tenant_id: tenantId,
-                    admission_id: id,
+                    admission_id: new_admission.id,
                     patient_id: currentAdmission.patient_id,
                     doctor_id: req.user!.userId,
                     category: 'NURSING',
@@ -323,7 +338,7 @@ router.post('/admissions/:id/transfer', authorize('wards:write'), auditMiddlewar
                 }
             });
 
-            return updated;
+            return new_admission;
         });
 
         sendSuccess(res, { message: 'Transfer successful', admission: updatedAdmission });
@@ -377,38 +392,84 @@ router.get('/admissions/:id', authorize('wards:read'), async (req: any, res: Res
         const { id } = req.params;
         const tenantId = req.tenantId!;
 
-        const admission = await prisma.bedAdmission.findUnique({
+        const currentAdmission = await prisma.bedAdmission.findUnique({
             where: { id, tenant_id: tenantId },
             include: {
                 patient: true,
-                bed: { include: { ward: true } },
-                charges: { orderBy: { created_at: 'desc' } },
-                vitals: { orderBy: { recorded_at: 'desc' }, take: 20 },
-                progress_notes: { include: { doctor: { select: { first_name: true, last_name: true } } }, orderBy: { created_at: 'desc' } },
-                payments: { orderBy: { payment_date: 'desc' } }
+                bed: { include: { ward: true } }
             }
         });
 
-        if (!admission) return sendError(res, ErrorCodes.NOT_FOUND, 'Admission not found', 404);
+        if (!currentAdmission) return sendError(res, ErrorCodes.NOT_FOUND, 'Admission not found', 404);
 
-        // Calculate running stay cost
-        const start = new Date(admission.admitted_at);
-        const end = admission.discharged_at ? new Date(admission.discharged_at) : new Date();
-        const diffMs = Math.abs(end.getTime() - start.getTime());
-        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24)) || 1;
-        const rate = admission.bed.daily_rate_override || admission.bed.ward.daily_rate;
-        const stayCost = diffDays * Number(rate);
+        // To support transfers, we fetch all admissions for this patient
+        // We will aggregate vitals, notes, and charges from all admissions that are still "relevant" 
+        // (e.g., from the current stay or uninvoiced)
+        const allPatientAdmissions = await prisma.bedAdmission.findMany({
+            where: { patient_id: currentAdmission.patient_id, tenant_id: tenantId },
+            include: { bed: { include: { ward: true } } }
+        });
+        const admissionIds = allPatientAdmissions.map(a => a.id);
 
-        const totalCharges = admission.charges.reduce((sum, c) => sum + (Number(c.amount) * c.quantity), 0);
+        const [charges, vitals, progress_notes, payments] = await Promise.all([
+            prisma.patientCharge.findMany({
+                where: { admission_id: { in: admissionIds }, tenant_id: tenantId },
+                orderBy: { created_at: 'desc' }
+            }),
+            prisma.vitalSign.findMany({
+                where: { admission_id: { in: admissionIds }, tenant_id: tenantId },
+                orderBy: { recorded_at: 'desc' },
+                take: 50
+            }),
+            prisma.progressNote.findMany({
+                where: { admission_id: { in: admissionIds }, tenant_id: tenantId },
+                include: { doctor: { select: { first_name: true, last_name: true } } },
+                orderBy: { created_at: 'desc' }
+            }),
+            prisma.payment.findMany({
+                where: { admission_id: { in: admissionIds }, tenant_id: tenantId },
+                orderBy: { created_at: 'desc' }
+            })
+        ]);
 
-        sendSuccess(res, {
-            ...admission,
-            stay_details: {
+        // Calculate aggregate stay cost across all admissions
+        let totalStayCost = 0;
+        let totalDays = 0;
+        const stayBreakdown = [];
+
+        for (const adm of allPatientAdmissions) {
+            const start = new Date(adm.admitted_at);
+            const end = adm.discharged_at ? new Date(adm.discharged_at) : new Date();
+            const diffDays = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) || 1;
+            const rate = adm.bed.daily_rate_override || adm.bed.ward.daily_rate;
+            const cost = diffDays * Number(rate);
+
+            totalStayCost += cost;
+            totalDays += diffDays;
+            stayBreakdown.push({
+                ward: adm.bed.ward.name,
+                bed: adm.bed.bed_number,
                 days: diffDays,
                 rate,
-                stay_cost: stayCost
+                cost
+            });
+        }
+
+        const totalCharges = charges.reduce((sum, c) => sum + (Number(c.amount) * c.quantity), 0);
+        const totalAdvance = allPatientAdmissions.reduce((sum, a) => sum + Number(a.advance_paid), 0);
+
+        sendSuccess(res, {
+            ...currentAdmission,
+            charges,
+            vitals,
+            progress_notes,
+            payments,
+            stay_details: {
+                total_days: totalDays,
+                total_stay_cost: totalStayCost,
+                breakdown: stayBreakdown
             },
-            running_total: stayCost + totalCharges - Number(admission.advance_paid)
+            running_total: totalStayCost + totalCharges - totalAdvance
         });
     } catch (error) {
         logger.error('Get admission detail error', { error });

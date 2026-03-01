@@ -141,4 +141,33 @@ router.get('/entries/reference/:type/:id', authorize('accounting:read'), async (
     sendSuccess(res, entries);
 });
 
+// ─── Financial Reports ───────────────────────────────────────────────────────
+
+router.get('/reports/pl', authorize('accounting:read'), async (req: any, res) => {
+    try {
+        const { start, end } = req.query;
+        const service = new AccountingService();
+        const report = await service.getProfitAndLossReport(
+            req.tenantId!,
+            start ? new Date(start as string) : new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+            end ? new Date(end as string) : new Date()
+        );
+        sendSuccess(res, report);
+    } catch (e: any) {
+        logger.error('P&L Report error', { error: e.message });
+        sendError(res, ErrorCodes.SERVER_ERROR, 'Failed to generate P&L report', 500);
+    }
+});
+
+router.get('/reports/tax', authorize('accounting:read'), async (req: any, res) => {
+    try {
+        const service = new AccountingService();
+        const report = await service.getTaxMatrixReport(req.tenantId!);
+        sendSuccess(res, report);
+    } catch (e: any) {
+        logger.error('Tax Matrix Report error', { error: e.message });
+        sendError(res, ErrorCodes.SERVER_ERROR, 'Failed to generate Tax Matrix report', 500);
+    }
+});
+
 export default router;

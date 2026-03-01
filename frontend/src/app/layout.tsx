@@ -1,10 +1,21 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Fira_Sans, Fira_Code } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/providers';
 import { Toaster } from '@/components/shared/toaster';
+import { cn } from '@/lib/utils';
+import { Metadata } from 'next';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const firaSans = Fira_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-fira-sans'
+});
+const firaCode = Fira_Code({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-fira-code'
+});
 
 export const metadata: Metadata = {
   title: {
@@ -24,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={cn(inter.variable, firaSans.variable, firaCode.variable, "font-sans")}>
         <Providers>
           {children}
           <Toaster />

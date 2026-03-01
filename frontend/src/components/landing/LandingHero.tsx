@@ -1,107 +1,113 @@
 'use client';
 
-import { ArrowRight, ShieldCheck, Zap, Globe } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Zap, Globe, Plus, Users } from 'lucide-react';
 import Link from 'next/link';
 
 export function LandingHero() {
     return (
-        <section className="relative pt-32 pb-20 overflow-hidden bg-slate-50">
-            {/* Background Decor */}
-            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl opacity-50" />
-            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-3xl opacity-50" />
+        <section className="relative pt-24 pb-16 overflow-hidden bg-white/50 font-fira-sans">
+            {/* Premium Ambient Architecture */}
+            <div className="absolute top-0 right-0 -mr-40 -mt-40 w-[600px] h-[600px] bg-emerald-100/20 rounded-full blur-[120px] animate-pulse-slow" />
+            <div className="absolute bottom-0 left-0 -ml-40 -mb-40 w-[400px] h-[400px] bg-cyan-100/20 rounded-full blur-[100px]" />
 
-            <div className="max-w-7xl mx-auto px-6 relative">
-                <div className="grid lg:grid-cols-2 gap-12 items-center">
-                    <div className="space-y-8 text-center lg:text-left animate-in slide-in-from-left-8 duration-700">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full text-xs font-black uppercase tracking-widest border border-emerald-100 shadow-sm">
-                            <span className="relative flex h-2 w-2">
+            <div className="max-w-7xl mx-auto px-10 relative z-10">
+                <div className="grid lg:grid-cols-2 gap-16 items-center">
+                    <div className="space-y-12 text-center lg:text-left animate-in slide-in-from-left-12 duration-1000">
+                        <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-white/70 backdrop-blur-md text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-[0.25em] border border-emerald-100/50 shadow-xl shadow-emerald-500/5 font-fira-code">
+                            <span className="relative flex h-2.5 w-2.5">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                             </span>
-                            Trusted by 100+ Hospitals in India
+                            HMS v4.0 Protocol Active
                         </div>
 
-                        <h1 className="text-5xl lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tighter">
-                            Patient Care <br />
-                            <span className="text-primary italic">Reimagined</span> for <br />
-                            Modern Hospitals.
+                        <h1 className="text-4xl lg:text-5xl font-black text-slate-900 leading-[1.1] tracking-[-0.05em] uppercase">
+                            Clinical <span className="text-emerald-900 px-2 inline-block">Intelligence</span>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-700 block mt-1">Redefined.</span>
                         </h1>
 
-                        <p className="text-lg text-slate-600 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
-                            The only all-in-one HIS that unifies Pharmacy, Wards, Lab, and Billing into a single, lightning-fast platform. Built for Indian clinicians.
+                        <p className="text-base text-slate-500 font-semibold leading-relaxed max-w-lg mx-auto lg:mx-0 tracking-tight">
+                            The unified HIS that orchestrates <span className="text-emerald-950">Diagnostics</span>, <span className="text-emerald-950">Logistics</span>, and <span className="text-emerald-950">Patient Care</span> into a single, high-resolution platform.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                             <Link
                                 href="/register"
-                                className="group flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-2xl shadow-primary/30 hover:bg-primary/90 hover:-translate-y-1 transition-all"
+                                className="group flex items-center justify-center gap-2.5 px-6 py-3.5 bg-emerald-900 text-white rounded-xl font-black text-[9px] uppercase tracking-[0.2em] shadow-xl shadow-emerald-900/20 hover:bg-emerald-800 hover:-translate-y-1 transition-all duration-500 font-fira-code"
                             >
-                                Experience Live Demo
-                                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                                Initiate Protocol
+                                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                             </Link>
                             <Link
                                 href="#pricing"
-                                className="px-8 py-4 bg-white border border-slate-200 text-slate-900 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-50 hover:-translate-y-1 transition-all shadow-xl shadow-slate-200/20 text-center"
+                                className="px-6 py-3.5 bg-white/70 backdrop-blur-md border border-emerald-100 text-slate-900 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:-translate-y-1 transition-all duration-500 shadow-lg shadow-emerald-500/5 text-center font-fira-code"
                             >
-                                View Pricing
+                                Explore Matrix
                             </Link>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-6 pt-8 border-t border-slate-200">
+                        <div className="grid grid-cols-3 gap-6 pt-8 border-t border-emerald-100/50">
                             {[
-                                { label: 'Uptime', value: '99.9%', icon: Zap },
-                                { label: 'Data Secure', value: 'HIPAA', icon: ShieldCheck },
-                                { label: 'Latency', value: '<50ms', icon: Globe },
+                                { label: 'Response', value: '<20ms', icon: Zap },
+                                { label: 'Security', value: 'AES-256', icon: ShieldCheck },
+                                { label: 'Sync', value: 'Live', icon: Globe },
                             ].map((stat) => (
-                                <div key={stat.label} className="space-y-1">
+                                <div key={stat.label} className="space-y-0.5">
                                     <div className="flex items-center gap-1.5 text-slate-400">
-                                        <stat.icon size={14} />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">{stat.label}</span>
+                                        <stat.icon size={12} className="text-emerald-500" />
+                                        <span className="text-[7.5px] font-black uppercase tracking-[0.15em] font-fira-code">{stat.label}</span>
                                     </div>
-                                    <p className="text-xl font-black text-slate-900">{stat.value}</p>
+                                    <p className="text-lg font-black text-slate-900 tracking-tighter font-fira-sans">{stat.value}</p>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="relative animate-in zoom-in-95 duration-700">
-                        {/* Abstract Dashboard Visual */}
-                        <div className="bg-white p-4 rounded-[40px] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.1)] border border-slate-100 relative group">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[40px]" />
-                            <div className="bg-slate-50/50 rounded-[32px] w-full aspect-[4/3] flex flex-col p-6 space-y-4 border border-slate-100/50">
-                                {/* Header Bar */}
-                                <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                                    <div className="flex gap-2">
-                                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600"><Zap size={16} /></div>
-                                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600"><Globe size={16} /></div>
+                    <div className="relative animate-in zoom-in-95 duration-1000">
+                        {/* High-Fidelity Mockup Architecture */}
+                        <div className="bg-white/80 backdrop-blur-3xl p-4 rounded-[40px] shadow-[0_32px_64px_-16px_rgba(16,185,129,0.1)] border border-emerald-100 relative group overflow-hidden max-w-[540px] ml-auto">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-[40px]" />
+                            
+                            {/* Inner Dashboard Core */}
+                            <div className="bg-slate-50/50 rounded-[32px] w-full aspect-[4/3.2] flex flex-col p-6 space-y-4 border border-emerald-50 shadow-inner">
+                                {/* Synthetic Header */}
+                                <div className="flex justify-between items-center bg-white/90 backdrop-blur-sm p-4 rounded-2xl border border-emerald-100 shadow-lg shadow-emerald-500/5">
+                                    <div className="flex gap-2.5">
+                                        <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600"><Zap size={16} /></div>
+                                        <div className="w-8 h-8 rounded-xl bg-cyan-100 flex items-center justify-center text-cyan-600"><Globe size={16} /></div>
                                     </div>
                                     <div className="flex gap-4 items-center">
-                                        <div className="h-4 w-32 bg-slate-200/50 rounded-full" />
-                                        <div className="h-10 w-10 bg-slate-200 rounded-full" />
+                                        <div className="h-3 w-24 bg-slate-100 rounded-full" />
+                                        <div className="h-8 w-8 bg-emerald-900 rounded-full shadow-md shadow-emerald-900/20" />
                                     </div>
                                 </div>
-                                {/* Content Grid */}
-                                <div className="grid grid-cols-3 gap-4 flex-1">
-                                    <div className="col-span-1 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                                        <div className="h-3 w-16 bg-slate-200/60 rounded-full" />
-                                        <div className="h-20 w-full bg-slate-50 rounded-xl border border-slate-100/50" />
+                                
+                                {/* Synthetic Grid */}
+                                <div className="grid grid-cols-12 gap-4 flex-1">
+                                    <div className="col-span-4 bg-white/90 p-4 rounded-2xl border border-emerald-50 shadow-lg shadow-emerald-500/5 space-y-4">
+                                        <div className="h-3 w-16 bg-emerald-100 rounded-full" />
+                                        <div className="aspect-video w-full bg-emerald-900/10 rounded-xl flex items-center justify-center">
+                                            <ShieldCheck size={24} className="text-emerald-900/20" />
+                                        </div>
                                         <div className="space-y-2">
-                                            <div className="h-2 w-full bg-slate-200/40 rounded-full" />
-                                            <div className="h-2 w-2/3 bg-slate-200/40 rounded-full" />
+                                            <div className="h-2 w-full bg-slate-100 rounded-full" />
+                                            <div className="h-2 w-2/3 bg-slate-100 rounded-full" />
                                         </div>
                                     </div>
-                                    <div className="col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                                        <div className="flex justify-between mb-6">
-                                            <div className="h-4 w-40 bg-slate-200/50 rounded-full" />
-                                            <div className="h-4 w-12 bg-primary/20 rounded-full border border-primary/10" />
+                                    <div className="col-span-8 bg-white/90 p-5 rounded-2xl border border-emerald-50 shadow-lg shadow-emerald-500/5">
+                                        <div className="flex justify-between mb-4">
+                                            <div className="h-3 w-32 bg-slate-100 rounded-full" />
+                                            <div className="h-4 w-10 bg-emerald-100 rounded-full border border-emerald-200" />
                                         </div>
-                                        <div className="space-y-4">
-                                            {[1, 2, 3, 4].map(i => (
-                                                <div key={i} className="flex gap-4 items-center">
-                                                    <div className="h-8 w-8 bg-slate-100 rounded-lg border border-slate-200/50" />
-                                                    <div className="flex-1 space-y-2">
-                                                        <div className="h-2 w-full bg-slate-200/40 rounded-full" />
-                                                        <div className="h-2 w-1/2 bg-slate-200/40 rounded-full" />
+                                        <div className="space-y-3">
+                                            {[1, 2, 3].map(i => (
+                                                <div key={i} className="flex gap-3 items-center">
+                                                    <div className="h-8 w-8 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center justify-center text-emerald-600">
+                                                        <Plus size={14} />
+                                                    </div>
+                                                    <div className="flex-1 space-y-1.5">
+                                                        <div className="h-1.5 w-full bg-slate-100 rounded-full" />
+                                                        <div className="h-1.5 w-1/2 bg-slate-100 rounded-full" />
                                                     </div>
                                                 </div>
                                             ))}
@@ -109,10 +115,11 @@ export function LandingHero() {
                                     </div>
                                 </div>
                             </div>
-                            {/* Floating Card */}
-                            <div className="absolute -bottom-6 -left-6 bg-slate-900 p-6 rounded-3xl shadow-2xl animate-bounce-slow border border-white/10 z-20">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ward Status</p>
-                                <p className="text-2xl font-black text-white">92% <span className="text-[10px] text-emerald-400 underline underline-offset-4 decoration-emerald-400/50">Occupancy</span></p>
+                            
+                            {/* Floating intelligence Node */}
+                            <div className="absolute -bottom-6 -right-6 bg-emerald-900 p-5 rounded-[24px] shadow-2xl shadow-emerald-900/30 animate-bounce-slow border border-emerald-800 z-20">
+                                <p className="text-[7.5px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-1 font-fira-code">Throughput</p>
+                                <p className="text-xl font-black text-white tracking-tighter">98% <span className="text-[9px] text-emerald-400/50 block mt-0.5 tracking-normal font-medium">Efficiency</span></p>
                             </div>
                         </div>
                     </div>

@@ -5,7 +5,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, UserPlus, X, Check, Loader2, Calendar, Phone, User } from 'lucide-react';
 import { coreApi as api } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
+import { ClinicalDatePicker } from './ClinicalDatePicker';
 
 interface Patient {
     id: string;
@@ -30,7 +31,7 @@ export function PatientSearchSelect({ onSelect, defaultValue, className }: Patie
     const dropdownRef = useRef<HTMLDivElement>(null);
     const queryClient = useQueryClient();
 
-    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm();
+    const { register, handleSubmit, reset, control, formState: { errors, isSubmitting } } = useForm();
 
     // Search patients
     const { data: results, isLoading: isSearching } = useQuery({
@@ -212,15 +213,20 @@ export function PatientSearchSelect({ onSelect, defaultValue, className }: Patie
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Date of Birth</label>
-                                    <div className="relative">
-                                        <Calendar size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                                        <input
-                                            type="date"
-                                            {...register('date_of_birth', { required: true })}
-                                            className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:ring-1 focus:ring-primary outline-none"
-                                        />
-                                    </div>
+                                    <Controller
+                                        control={control}
+                                        name="date_of_birth"
+                                        rules={{ required: true }}
+                                        render={({ field }) => (
+                                            <ClinicalDatePicker
+                                                label="Date of Birth"
+                                                mode="demographic"
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                            />
+                                        )}
+                                    />
+                                    {errors.date_of_birth && <p className="text-[9px] text-red-500 mt-1 ml-1">Required</p>}
                                 </div>
                                 <div>
                                     <label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Gender</label>

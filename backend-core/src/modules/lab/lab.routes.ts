@@ -213,25 +213,43 @@ router.post(
         return;
       }
 
-      const order = await prisma.labOrder.create({
-        data: {
-          tenant_id: tenantId,
-          patient_id: data.patient_id,
-          doctor_id: req.user!.userId,
-          appointment_id: data.appointment_id,
-          order_number: generateOrderNumber(),
-          priority: data.priority,
-          clinical_notes: data.clinical_notes,
-          items: {
-            create: data.tests.map((t) => ({
-              lab_test_id: t.lab_test_id,
-            })),
+      const order = await prisma.$transaction(async (tx) => {
+        const ord = await tx.labOrder.create({
+          data: {
+            tenant_id: tenantId,
+            patient_id: data.patient_id,
+            doctor_id: req.user!.userId,
+            appointment_id: data.appointment_id,
+            order_number: generateOrderNumber(),
+            priority: data.priority,
+            clinical_notes: data.clinical_notes,
+            items: {
+              create: data.tests.map((t) => ({
+                lab_test_id: t.lab_test_id,
+              })),
+            },
           },
-        },
-        include: {
-          items: { include: { lab_test: true } },
-          patient: { select: { first_name: true, last_name: true, mrn: true } },
-        },
+          include: {
+            items: { include: { lab_test: true } },
+            patient: { select: { first_name: true, last_name: true, mrn: true } },
+          },
+        });
+
+        // Create charges for each lab test
+        await tx.patientCharge.createMany({
+          data: ord.items.map((item) => ({
+            tenant_id: tenantId,
+            patient_id: data.patient_id,
+            description: `Lab Test: ${item.lab_test.name} (${item.lab_test.code})`,
+            amount: item.lab_test.price,
+            quantity: 1,
+            category: 'LAB',
+            service_status: 'READY',
+            performed_by: req.user!.userId,
+          })),
+        });
+
+        return ord;
       });
 
       // Queue for processing

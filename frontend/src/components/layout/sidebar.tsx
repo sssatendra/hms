@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, CalendarDays, FileText, Pill,
   FlaskConical, Settings, ChevronRight, Building2,
-  Package, Wallet
+  Package, Wallet, UserCheck
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth-store';
 import { hasPermission } from '@/lib/auth-store';
@@ -23,12 +23,13 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Patients', href: '/patients', icon: Users, permission: 'patients:read' },
   { label: 'Appointments', href: '/appointments', icon: CalendarDays, permission: 'appointments:read' },
-  { label: 'EMR & Notes', href: '/emr', icon: FileText, permission: 'emr:read' },
+  { label: 'Medical Records', href: '/emr', icon: FileText, permission: 'emr:read' },
   { label: 'Pharmacy', href: '/pharmacy', icon: Pill, permission: 'pharmacy:read' },
   { label: 'Laboratory', href: '/lab', icon: FlaskConical, permission: 'lab:read' },
   { label: 'Inventory', href: '/inventory', icon: Package, permission: 'inventory:read' },
   { label: 'Accounting', href: '/accounting', icon: Wallet, permission: 'accounting:read' },
-  { label: 'Admissions & Wards', href: '/wards', icon: Building2, permission: 'wards:read' },
+  { label: 'Wards & Admissions', href: '/wards', icon: Building2, permission: 'wards:read' },
+  { label: 'Staff Status', href: '/staff-availability', icon: UserCheck },
   { label: 'Billing', href: '/billing', icon: FileText, permission: 'billing:read' },
 ];
 
@@ -76,13 +77,13 @@ export function Sidebar() {
               'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group',
               isActive(item.href)
                 ? 'bg-primary/10 text-primary'
-                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
             )}
           >
             <item.icon
               className={cn(
                 'h-4 w-4 flex-shrink-0',
-                isActive(item.href) ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                isActive(item.href) ? 'text-primary' : 'text-muted-foreground group-hover:text-accent-foreground'
               )}
             />
             {item.label}
@@ -110,13 +111,13 @@ export function Sidebar() {
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group',
                   isActive(item.href)
                     ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                 )}
               >
                 <item.icon
                   className={cn(
                     'h-4 w-4 flex-shrink-0',
-                    isActive(item.href) ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                    isActive(item.href) ? 'text-primary' : 'text-muted-foreground group-hover:text-accent-foreground'
                   )}
                 />
                 {item.label}

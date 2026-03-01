@@ -152,7 +152,7 @@ router.get('/:id', authorize('patients:read'), async (req: Request, res: Respons
         },
         lab_orders: {
           orderBy: { created_at: 'desc' },
-          include: { items: { include: { test: true } } }
+          include: { items: { include: { lab_test: true } } }
         },
         prescriptions: {
           orderBy: { created_at: 'desc' },

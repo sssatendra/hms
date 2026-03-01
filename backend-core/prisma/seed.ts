@@ -73,6 +73,18 @@ async function main() {
     })
   ));
 
+  // Create Pharmacy Warehouse
+  const pharmacyWarehouse = await prisma.warehouse.upsert({
+    where: { tenant_id_code: { tenant_id: tenant.id, code: 'PH01' } },
+    update: {},
+    create: {
+      tenant_id: tenant.id,
+      name: 'Main Pharmacy',
+      code: 'PH01',
+      type: 'PHARMACY',
+    },
+  });
+
   console.log(`✅ Created ${departments.length} departments`);
 
   // Create demo doctor
@@ -205,27 +217,57 @@ async function main() {
   });
 
   const inventoryItems = await Promise.all([
-    { drug_name: 'Amoxicillin', generic_name: 'Amoxicillin', sku: 'AMX-500', batch_number: 'B001', category: 'antibiotic', formulation: '500mg capsules', stock_quantity: 500, unit_cost: 0.50, selling_price: 1.50, expiry_date: new Date('2026-06-30'), reorder_level: 100 },
-    { drug_name: 'Metformin', generic_name: 'Metformin HCl', sku: 'MET-500', batch_number: 'B002', category: 'antidiabetic', formulation: '500mg tablets', stock_quantity: 300, unit_cost: 0.30, selling_price: 0.90, expiry_date: new Date('2026-12-31'), reorder_level: 50 },
-    { drug_name: 'Lisinopril', generic_name: 'Lisinopril', sku: 'LIS-10', batch_number: 'B003', category: 'antihypertensive', formulation: '10mg tablets', stock_quantity: 200, unit_cost: 0.40, selling_price: 1.20, expiry_date: new Date('2026-09-30'), reorder_level: 50 },
-    { drug_name: 'Paracetamol', generic_name: 'Acetaminophen', sku: 'PCM-500', batch_number: 'B004', category: 'analgesic', formulation: '500mg tablets', stock_quantity: 8, unit_cost: 0.10, selling_price: 0.30, expiry_date: new Date('2027-03-31'), reorder_level: 100, status: 'LOW_STOCK' },
-    { drug_name: 'Atorvastatin', generic_name: 'Atorvastatin Calcium', sku: 'ATV-20', batch_number: 'B005', category: 'statin', formulation: '20mg tablets', stock_quantity: 150, unit_cost: 0.80, selling_price: 2.40, expiry_date: new Date('2026-08-31'), reorder_level: 30 },
-  ].map((item) =>
-    prisma.pharmacyInventory.create({
-      data: {
+    { drug_name: 'Amoxicillin', generic_name: 'Amoxicillin', sku: 'AMX-500', batch_number: 'B001', category: 'MEDICINE', formulation: '500mg capsules', stock_quantity: 500, unit_cost: 0.50, selling_price: 1.50, expiry_date: new Date('2026-06-30'), reorder_level: 100 },
+    { drug_name: 'Metformin', generic_name: 'Metformin HCl', sku: 'MET-500', batch_number: 'B002', category: 'MEDICINE', formulation: '500mg tablets', stock_quantity: 300, unit_cost: 0.30, selling_price: 0.90, expiry_date: new Date('2026-12-31'), reorder_level: 50 },
+    { drug_name: 'Lisinopril', generic_name: 'Lisinopril', sku: 'LIS-10', batch_number: 'B003', category: 'MEDICINE', formulation: '10mg tablets', stock_quantity: 200, unit_cost: 0.40, selling_price: 1.20, expiry_date: new Date('2026-09-30'), reorder_level: 50 },
+    { drug_name: 'Paracetamol', generic_name: 'Acetaminophen', sku: 'PCM-500', batch_number: 'B004', category: 'MEDICINE', formulation: '500mg tablets', stock_quantity: 8, unit_cost: 0.10, selling_price: 0.30, expiry_date: new Date('2027-03-31'), reorder_level: 100 },
+    { drug_name: 'Atorvastatin', generic_name: 'Atorvastatin Calcium', sku: 'ATV-20', batch_number: 'B005', category: 'MEDICINE', formulation: '20mg tablets', stock_quantity: 150, unit_cost: 0.80, selling_price: 2.40, expiry_date: new Date('2026-08-31'), reorder_level: 30 },
+  ].map(async (item) => {
+    const invItem = await prisma.inventoryItem.upsert({
+      where: { tenant_id_sku: { tenant_id: tenant.id, sku: item.sku } },
+      update: {},
+      create: {
         tenant_id: tenant.id,
-        supplier_id: supplier.id,
-        ...item,
-        status: (item as any).status || (item.stock_quantity <= item.reorder_level ? 'LOW_STOCK' : 'ACTIVE'),
+        name: item.drug_name,
+        sku: item.sku,
+        category: 'MEDICINE',
+        description: `${item.drug_name} (${item.formulation})`,
       },
-    })
-  ));
+    });
+
+    return prisma.inventoryStock.upsert({
+      where: {
+        warehouse_id_item_id_batch_number: {
+          warehouse_id: pharmacyWarehouse.id,
+          item_id: invItem.id,
+          batch_number: item.batch_number,
+        },
+      },
+      update: {
+        quantity: item.stock_quantity,
+        unit_cost: item.unit_cost,
+        selling_price: item.selling_price,
+      },
+      create: {
+        tenant_id: tenant.id,
+        warehouse_id: pharmacyWarehouse.id,
+        item_id: invItem.id,
+        batch_number: item.batch_number,
+        expiry_date: item.expiry_date,
+        quantity: item.stock_quantity,
+        unit_cost: item.unit_cost,
+        selling_price: item.selling_price,
+      },
+    });
+  }));
 
   console.log(`✅ Created ${inventoryItems.length} inventory items`);
 
   // Create ward and beds
-  const ward = await prisma.ward.create({
-    data: {
+  const ward = await prisma.ward.upsert({
+    where: { tenant_id_code: { tenant_id: tenant.id, code: 'GWA' } },
+    update: {},
+    create: {
       tenant_id: tenant.id,
       department_id: departments[0].id,
       name: 'General Ward A',
@@ -236,16 +278,21 @@ async function main() {
   });
 
   await Promise.all(
-    Array.from({ length: 5 }, (_, i) =>
-      prisma.bed.create({
-        data: {
-          tenant_id: tenant.id,
-          ward_id: ward.id,
-          bed_number: `A-${(i + 1).toString().padStart(2, '0')}`,
+    Array.from({ length: 5 }, (_, i) => {
+      const bedNumber = `A-${(i + 1).toString().padStart(2, '0')}`;
+      return prisma.bed.upsert({
+        where: { ward_id_bed_number: { ward_id: ward.id, bed_number: bedNumber } },
+        update: {
           status: i === 0 ? 'OCCUPIED' : 'AVAILABLE',
         },
-      })
-    )
+        create: {
+          tenant_id: tenant.id,
+          ward_id: ward.id,
+          bed_number: bedNumber,
+          status: i === 0 ? 'OCCUPIED' : 'AVAILABLE',
+        },
+      });
+    })
   );
 
   console.log('✅ Created ward and beds');

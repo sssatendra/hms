@@ -253,4 +253,88 @@ export class AccountingService {
             currency: 'INR'
         };
     }
+
+    /**
+     * Generates a Profit & Loss report for a specified date range.
+     */
+    async getProfitAndLossReport(tenantId: string, startDate: Date, endDate: Date) {
+        const ledgerDetails = await this.prisma.ledgerDetail.findMany({
+            where: {
+                account: { 
+                    tenant_id: tenantId,
+                    type: { in: [AccountType.INCOME, AccountType.EXPENSE] }
+                },
+                journal_entry: {
+                    date: { gte: startDate, lte: endDate }
+                }
+            },
+            include: { account: true }
+        });
+
+        const report: any = {
+            income: {},
+            expense: {},
+            totalIncome: 0,
+            totalExpense: 0,
+            netProfit: 0,
+            period: { start: startDate, end: endDate }
+        };
+
+        ledgerDetails.forEach(ld => {
+            const amount = Number(ld.debit) - Number(ld.credit);
+            const target = ld.account.type === AccountType.INCOME ? report.income : report.expense;
+            
+            if (!target[ld.account.name]) target[ld.account.name] = 0;
+            
+            // Income increases with Credit, Expenses with Debit
+            if (ld.account.type === AccountType.INCOME) {
+                const balance = Number(ld.credit) - Number(ld.debit);
+                target[ld.account.name] += balance;
+                report.totalIncome += balance;
+            } else {
+                const balance = Number(ld.debit) - Number(ld.credit);
+                target[ld.account.name] += balance;
+                report.totalExpense += balance;
+            }
+        });
+
+        report.netProfit = report.totalIncome - report.totalExpense;
+        return report;
+    }
+
+    /**
+     * Generates a Tax Matrix report aggregating balances of tax-related accounts.
+     */
+    async getTaxMatrixReport(tenantId: string) {
+        // Find accounts with "Tax", "GST", "VAT", or "TDS" in them
+        const taxAccounts = await this.prisma.account.findMany({
+            where: {
+                tenant_id: tenantId,
+                OR: [
+                    { name: { contains: 'Tax', mode: 'insensitive' } },
+                    { name: { contains: 'GST', mode: 'insensitive' } },
+                    { name: { contains: 'VAT', mode: 'insensitive' } },
+                    { name: { contains: 'TDS', mode: 'insensitive' } },
+                    { code: { startsWith: '22' } } // Common tax code prefix in our seed
+                ]
+            },
+            include: {
+                ledger_details: true
+            }
+        });
+
+        return taxAccounts.map(acc => {
+            const debit = acc.ledger_details.reduce((sum, ld) => sum + Number(ld.debit), 0);
+            const credit = acc.ledger_details.reduce((sum, ld) => sum + Number(ld.credit), 0);
+            return {
+                id: acc.id,
+                code: acc.code,
+                name: acc.name,
+                type: acc.type,
+                totalDebit: debit,
+                totalCredit: credit,
+                netBalance: acc.type === AccountType.ASSET ? (debit - credit) : (credit - debit)
+            };
+        });
+    }
 }

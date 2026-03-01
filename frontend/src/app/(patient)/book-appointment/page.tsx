@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { coreApi } from '@/lib/api';
+import { ClinicalDatePicker } from '@/components/shared/ClinicalDatePicker';
 
 export default function BookAppointmentPage() {
   const [selectedDoctor, setSelectedDoctor] = useState('');
@@ -18,7 +19,7 @@ export default function BookAppointmentPage() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Book Appointment</h1>
-      
+
       {/* Doctor selection */}
       <select onChange={(e) => setSelectedDoctor(e.target.value)}>
         <option value="">Select Doctor</option>
@@ -26,10 +27,11 @@ export default function BookAppointmentPage() {
       </select>
 
       {/* Date picker */}
-      <input
-        type="date"
-        onChange={(e) => setSelectedDate(e.target.value)}
-        min={new Date().toISOString().split('T')[0]}
+      <ClinicalDatePicker
+        label="Select Date"
+        value={selectedDate}
+        onChange={setSelectedDate}
+        className="w-full max-w-xs"
       />
 
       {/* Available slots */}

@@ -7,6 +7,7 @@ import { authorize } from '../../middleware/rbac';
 import { auditMiddleware } from '../../middleware/audit';
 import { addNotificationJob } from '../../services/queue';
 import { logger } from '../../utils/logger';
+import { Decimal } from '@prisma/client/runtime/library';
 
 const router = Router();
 router.use(authenticate);
@@ -105,16 +106,35 @@ router.post(
         return;
       }
 
-      const appointment = await prisma.appointment.create({
-        data: {
-          tenant_id: tenantId,
-          created_by: req.user!.userId,
-          ...data,
-        },
-        include: {
-          patient: { select: { first_name: true, last_name: true, user_id: true } },
-          doctor: { select: { first_name: true, last_name: true } },
-        },
+      const appointment = await prisma.$transaction(async (tx) => {
+        const apt = await tx.appointment.create({
+          data: {
+            tenant_id: tenantId,
+            created_by: req.user!.userId,
+            ...data,
+          },
+          include: {
+            patient: { select: { first_name: true, last_name: true, user_id: true, id: true } },
+            doctor: { select: { first_name: true, last_name: true } },
+          },
+        });
+
+        // Create automatic consultation charge
+        await tx.patientCharge.create({
+          data: {
+            tenant_id: tenantId,
+            patient_id: apt.patient_id,
+            description: `Consultation Fee - Dr. ${apt.doctor.first_name} ${apt.doctor.last_name}`,
+            amount: new Decimal(500.00), // Default fee
+            category: 'CONSULTATION',
+            status: 'PENDING',
+            payment_status: 'UNPAID',
+            service_status: 'COMPLETED', // Mark as completed since it's a session fee
+            performed_by: apt.doctor_id,
+          }
+        });
+
+        return apt;
       });
 
       // Queue notification

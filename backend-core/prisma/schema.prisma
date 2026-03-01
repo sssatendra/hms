@@ -26,6 +26,12 @@ enum UserRole {
   PATIENT
 }
 
+enum AttendanceStatus {
+  AVAILABLE
+  ON_BREAK
+  OFF_DUTY
+}
+
 enum UserStatus {
   ACTIVE
   INACTIVE
@@ -310,6 +316,8 @@ model User {
   department_id         String?
   specialization        String?    // For doctors
   license_number        String?    // For doctors/pharmacists
+  availability_status   AttendanceStatus @default(OFF_DUTY)
+  skills                String[]         @default([])
   is_active             Boolean    @default(true)
   created_at            DateTime   @default(now())
   updated_at            DateTime   @updatedAt
@@ -880,6 +888,7 @@ model BedAdmission {
   expected_discharge    DateTime?
   admitted_by           String
   discharged_by   String?
+  is_invoiced     Boolean   @default(false)
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt
 
