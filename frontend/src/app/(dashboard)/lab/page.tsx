@@ -14,6 +14,7 @@ import { formatDateTime, getStatusColor, cn, formatDate } from '@/lib/utils';
 import { SkeletonTable } from '@/components/shared/skeleton';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import LabOrderDetailModal from '@/components/lab/LabOrderDetailModal';
+import { toast } from 'sonner';
 import Link from 'next/link';
 
 function LabPage() {
@@ -53,9 +54,12 @@ function LabPage() {
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       coreApi.patch(`/lab/orders/${id}/status`, { status }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['lab', 'orders'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lab', 'orders'] });
+      toast.success("Order status updated");
+    },
     onError: (error: any) => {
-      alert(`Failed to update status: ${error.message || 'Unknown error'}`);
+      toast.error(error.message || 'Failed to update status');
     }
   });
 
@@ -68,8 +72,12 @@ function LabPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lab', 'orders'] });
+      toast.success("File uploaded successfully");
       setUploadOrderId(null);
     },
+    onError: (error: any) => {
+      toast.error(error.message || 'File upload failed');
+    }
   });
 
   const orders = ordersData?.data || [];

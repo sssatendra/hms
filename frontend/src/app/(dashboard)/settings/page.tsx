@@ -38,6 +38,21 @@ export default function SettingsPage() {
         in_app_system: user?.settings?.in_app_system ?? true,
     });
 
+    const updateProfileMutation = useMutation({
+        mutationFn: async (data: any) => {
+            return api.put(`/users/${user?.id}`, data);
+        },
+        onSuccess: (res: any) => {
+            if (tenant) {
+                setUser(res.data, tenant);
+                toast.success('Profile identification updated');
+            }
+        },
+        onError: (err: any) => {
+            toast.error(err.response?.data?.message || 'Failed to update profile');
+        }
+    });
+
     useEffect(() => {
         if (tenant) {
             setSettingsForm({
@@ -242,7 +257,14 @@ export default function SettingsPage() {
                                     <input type="text" value={profileForm.last_name} onChange={e => setProfileForm(p => ({ ...p, last_name: e.target.value }))} className="w-full px-5 py-4 bg-white/50 border border-teal-100 rounded-2xl text-[11px] font-black uppercase tracking-wider outline-none focus:ring-4 focus:ring-teal-500/10" />
                                 </div>
                             </div>
-                            <button className="px-8 py-4 bg-teal-900 text-white rounded-[24px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-teal-900/20 active:scale-95 font-fira-code">Update Identification</button>
+                            <button
+                                onClick={() => updateProfileMutation.mutate(profileForm)}
+                                disabled={updateProfileMutation.isPending}
+                                className="px-8 py-4 bg-teal-900 text-white rounded-[24px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-teal-900/20 active:scale-95 font-fira-code flex items-center gap-2 items-center"
+                            >
+                                {updateProfileMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                                Update Identification
+                            </button>
                         </div>
                     )}
 

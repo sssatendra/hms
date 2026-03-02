@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import {
   Search, User, FlaskConical, AlertCircle,
   ChevronLeft, Plus, X, Check, Loader2,
@@ -37,7 +38,11 @@ export default function NewLabOrderPage() {
     mutationFn: (data: any) => coreApi.post('/lab/orders', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lab', 'orders'] });
+      toast.success("Lab order created successfully");
       router.push('/lab');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to create lab order');
     }
   });
 

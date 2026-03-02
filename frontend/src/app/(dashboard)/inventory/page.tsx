@@ -28,6 +28,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { coreApi as api } from '@/lib/api';
 import { cn, formatDate } from '@/lib/utils';
 import { ClinicalDatePicker } from '@/components/shared/ClinicalDatePicker';
+import { toast } from 'sonner';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 
 export default function InventoryDashboard() {
@@ -107,7 +108,11 @@ export default function InventoryDashboard() {
         mutationFn: (data) => api.post('/inventory/items', data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['inventory', 'items'] });
+            toast.success("Item created successfully");
             setShowCreateModal(false);
+        },
+        onError: (err: any) => {
+            toast.error(err.response?.data?.message || "Failed to create item");
         }
     });
 
@@ -115,9 +120,10 @@ export default function InventoryDashboard() {
         mutationFn: (data: any) => api.post('/inventory/movements', data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['inventory', 'items'] });
+            toast.success("Stock movement recorded");
             setShowMovementModal(false);
         },
-        onError: (err: any) => alert(err.response?.data?.message || 'Movement failed')
+        onError: (err: any) => toast.error(err.response?.data?.message || 'Movement failed')
     });
 
     return (
@@ -301,8 +307,8 @@ export default function InventoryDashboard() {
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
                                                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"></div>
-                                                    <span className="text-[8px] font-black uppercase tracking-[0.1em] text-emerald-600 font-fira-code">Sync OK</span>
-                                                </div>
+                                                        <span className="text-[8px] font-black uppercase tracking-[0.1em] text-emerald-600 font-fira-code">Sync OK</span>
+                                                    </div>
                                                     <ChevronRight size={14} className="text-slate-200 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
                                                 </div>
                                             </td>
@@ -469,7 +475,7 @@ function RecordMovementModal({ item, warehouses, onClose, onSubmit, isLoading }:
                     </div>
                     <button onClick={onClose} className="h-8 w-8 flex items-center justify-center rounded-lg bg-white border border-emerald-100 text-slate-400 hover:text-rose-500 transition-all text-xs shadow-sm active:scale-95 cursor-pointer">×</button>
                 </div>
-                <form 
+                <form
                     onSubmit={handleSubmit((data) => {
                         const payload = {
                             itemId: item.id,
@@ -482,7 +488,7 @@ function RecordMovementModal({ item, warehouses, onClose, onSubmit, isLoading }:
                             expiryDate: data.expiryDate
                         };
                         onSubmit(payload);
-                    })} 
+                    })}
                     className="p-5 space-y-4 font-fira-sans"
                 >
                     <div className="grid grid-cols-2 gap-4">

@@ -119,5 +119,15 @@ If you are looking for technical setup instructions, environment configurations,
 
 ---
 
+---
+
+## 🆕 Recent Improvements
+
+- **Comprehensive UX Feedback**: Implemented `sonner` toast notifications across all modules (Auth, Wards, Inventory, Lab, EMR, Settings) for real-time success/error feedback.
+- **Session Stability**: Resolved premature logout issues by aligning backend cookie `maxAge` with JWT expiration (24 hours).
+- **TypeScript Robustness**: Fixed critical type errors in authentication hooks and improved API response typing.
+
+---
+
 ## 📄 License
 MIT License. Built with ❤️ by the Agentbot Dev Team.

@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { useForm, Controller } from 'react-hook-form';
 import { PatientSearchSelect } from '@/components/shared/PatientSearchSelect';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { toast } from 'sonner';
 import { Portal } from '@/components/shared/portal';
 import { useCurrency } from '@/hooks/use-currency';
 
@@ -68,9 +69,10 @@ export default function WardsPage() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['wards'] });
+            toast.success("Ward deleted successfully");
         },
         onError: (error: any) => {
-            alert(error.response?.data?.message || 'Failed to delete ward');
+            toast.error(error.response?.data?.message || 'Failed to delete ward');
         }
     });
 
@@ -81,13 +83,23 @@ export default function WardsPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['wards'] });
             queryClient.invalidateQueries({ queryKey: ['active-admissions'] });
+            toast.success("Patient discharged successfully");
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || "Discharge failed");
         }
     });
 
     const deleteChargeMutation = useMutation({
         mutationFn: async ({ admissionId, chargeId }: { admissionId: string, chargeId: string }) =>
             api.delete(`/wards/admissions/${admissionId}/charges/${chargeId}`),
-        onSuccess: (_, variables) => queryClient.invalidateQueries({ queryKey: ['admission', variables.admissionId] })
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['admission', variables.admissionId] });
+            toast.success("Charge deleted successfully");
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || "Failed to delete charge");
+        }
     });
 
     if (isLoading) {
@@ -335,7 +347,11 @@ function AdmitModal({ onClose, patients, wards }: any) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['wards'] });
+            toast.success("Patient admitted successfully");
             onClose();
+        },
+        onError: (err: any) => {
+            toast.error(err.response?.data?.message || "Admission failed");
         }
     });
 
@@ -466,22 +482,28 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
         mutationFn: async (data: any) => api.post(`/wards/admissions/${id}/vitals`, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admission', id] });
+            toast.success("Vitals recorded successfully");
         },
-        onError: (err: any) => alert(err.response?.data?.message || 'Failed to save vitals')
+        onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to save vitals')
     });
 
     const editChargeMutation = useMutation({
         mutationFn: async ({ chargeId, data }: { chargeId: string, data: any }) => api.patch(`/wards/admissions/${id}/charges/${chargeId}`, data),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admission', id] }),
-        onError: (err: any) => alert(err.response?.data?.message || 'Failed to update charge')
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admission', id] });
+            toast.success("Charge updated successfully");
+        },
+        onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to update charge')
     });
 
     const dischargeMutation = useMutation({
         mutationFn: async (notes: string) => api.post(`/wards/admissions/${id}/discharge`, { notes }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['wards'] });
+            toast.success("Patient discharged successfully");
             onClose();
-        }
+        },
+        onError: (err: any) => toast.error(err.response?.data?.message || 'Discharge failed')
     });
 
     const { data: medicines } = useQuery({
@@ -496,17 +518,29 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
 
     const addChargeMutation = useMutation({
         mutationFn: async (data: any) => api.post(`/wards/admissions/${id}/charges`, data),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admission', id] })
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admission', id] });
+            toast.success("Charge added successfully");
+        },
+        onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to add charge')
     });
 
     const approveChargeMutation = useMutation({
         mutationFn: async (chargeId: string) => api.post(`/wards/admissions/${id}/charges/${chargeId}/approve`),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admission', id] })
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admission', id] });
+            toast.success("Charge approved");
+        },
+        onError: (err: any) => toast.error(err.response?.data?.message || 'Approval failed')
     });
 
     const addNoteMutation = useMutation({
         mutationFn: async (data: any) => api.post(`/wards/admissions/${id}/notes`, data),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admission', id] })
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admission', id] });
+            toast.success("Clinical note added");
+        },
+        onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to add note')
     });
 
     if (isLoading || !admission) return null;
@@ -1111,7 +1145,11 @@ function CreateWardModal({ onClose }: { onClose: () => void }) {
         mutationFn: async (data: any) => api.post('/wards', data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['wards'] });
+            toast.success("Ward created successfully");
             onClose();
+        },
+        onError: (err: any) => {
+            toast.error(err.response?.data?.message || "Failed to create ward");
         }
     });
 
@@ -1213,7 +1251,11 @@ function EditWardModal({ ward, onClose }: { ward: any, onClose: () => void }) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['wards'] });
+            toast.success("Ward updated successfully");
             onClose();
+        },
+        onError: (err: any) => {
+            toast.error(err.response?.data?.message || "Update failed");
         }
     });
 
@@ -1304,9 +1346,12 @@ function TransferModal({ admissionId, currentBed, onClose }: { admissionId: stri
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['wards'] });
+            toast.success("Patient transferred successfully");
             onClose();
         },
-        onError: (err: any) => alert(err.response?.data?.message || 'Transfer failed')
+        onError: (err: any) => {
+            toast.error(err.response?.data?.message || "Transfer failed");
+        }
     });
 
     const targetWard = wards?.find((w: any) => w.id === selectedWardId);

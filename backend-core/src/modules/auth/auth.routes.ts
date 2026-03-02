@@ -122,7 +122,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
 
     res.cookie('access_token', accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
     res.cookie('refresh_token', refreshToken, {
@@ -250,7 +250,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     // Set cookies
     res.cookie('access_token', accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000,
     });
     res.cookie('refresh_token', refreshToken, {
       ...cookieOptions,
@@ -316,7 +316,7 @@ router.post('/refresh', async (req: Request, res: Response): Promise<void> => {
 
     res.cookie('access_token', newAccessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000,
     });
 
     sendSuccess(res, { message: 'Token refreshed' });
@@ -507,7 +507,7 @@ router.post('/login/2fa', async (req: Request, res: Response): Promise<void> => 
     // Set cookies
     res.cookie('access_token', accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000,
     });
     res.cookie('refresh_token', refreshToken, {
       ...cookieOptions,

@@ -3,6 +3,7 @@
 import { useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { useAuthStore, User, Tenant } from '@/lib/auth-store';
 import { coreApi, ApiError } from '@/lib/api';
 
@@ -45,9 +46,13 @@ export function useAuth() {
     onSuccess: (response) => {
       if (response.data && !response.data.mfa_required) {
         setUser(response.data.user, response.data.tenant);
+        toast.success(`Welcome back, ${response.data.user.first_name}!`);
         router.push('/dashboard');
       }
     },
+    onError: (error: ApiError) => {
+      toast.error(error.message || 'Login failed');
+    }
   });
 
   // Verify 2FA mutation (during login)
@@ -57,9 +62,13 @@ export function useAuth() {
     onSuccess: (response) => {
       if (response.data) {
         setUser(response.data.user, response.data.tenant);
+        toast.success("Identity verified successfully");
         router.push('/dashboard');
       }
     },
+    onError: (error: ApiError) => {
+      toast.error(error.message || 'Verification failed');
+    }
   });
 
   // Logout mutation
@@ -68,12 +77,14 @@ export function useAuth() {
     onSuccess: () => {
       clearAuth();
       queryClient.clear();
+      toast.success("Successfully logged out");
       router.push('/login');
     },
     onError: () => {
       // Clear local state even if server request fails
       clearAuth();
       queryClient.clear();
+      toast.info("Session ended");
       router.push('/login');
     },
   });
@@ -85,9 +96,13 @@ export function useAuth() {
     onSuccess: (response) => {
       if (response.data) {
         setUser(response.data.user, response.data.tenant);
+        toast.success("Account created successfully!");
         router.push('/dashboard');
       }
     },
+    onError: (error: ApiError) => {
+      toast.error(error.message || 'Registration failed');
+    }
   });
 
   const login = useCallback(
