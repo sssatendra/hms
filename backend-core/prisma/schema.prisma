@@ -318,9 +318,10 @@ model User {
   license_number        String?    // For doctors/pharmacists
   availability_status   AttendanceStatus @default(OFF_DUTY)
   skills                String[]         @default([])
-  is_active             Boolean    @default(true)
-  created_at            DateTime   @default(now())
-  updated_at            DateTime   @updatedAt
+  settings              Json?            @default("{}")
+  is_active             Boolean          @default(true)
+  created_at            DateTime         @default(now())
+  updated_at            DateTime         @updatedAt
 
   // Relations
   tenant              Tenant             @relation(fields: [tenant_id], references: [id])

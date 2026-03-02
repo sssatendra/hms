@@ -61,7 +61,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     'appointments:read', 'appointments:write',
     'prescriptions:read', 'prescriptions:write',
     'emr:read', 'emr:write',
-    'lab:read', 'lab:write',
+    'lab:read', 'lab:write', 'lab:process',
     'billing:read',
     'wards:read',
   ],

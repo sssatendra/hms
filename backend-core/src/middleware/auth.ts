@@ -44,6 +44,12 @@ export const authenticate = async (
 
     const payload = verifyAccessToken(token);
 
+    // If MFA is pending, only allow if explicitly handled (default: reject)
+    if (payload.mfa_pending) {
+      sendError(res, ErrorCodes.UNAUTHORIZED, 'MFA verification required', 401);
+      return;
+    }
+
     // Validate tenant context
     if (!payload.tenantId) {
       sendError(res, ErrorCodes.UNAUTHORIZED, 'Invalid token payload', 401);

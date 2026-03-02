@@ -20,6 +20,7 @@ const invoiceItemSchema = z.object({
     charge_id: z.string().uuid().optional(),
     dispensing_log_id: z.string().uuid().optional(),
     admission_id: z.string().uuid().optional(),
+    metadata: z.record(z.any()).optional(),
 });
 
 const checkoutSchema = z.object({
@@ -49,6 +50,10 @@ router.get('/invoices', authorize('billing:read'), async (req: any, res: Respons
             include: { patient: { select: { first_name: true, last_name: true, mrn: true } } },
             orderBy: { created_at: 'desc' }
         });
+        res.set('ETag', 'false');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
         sendSuccess(res, invoices);
     } catch (error) {
         sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to fetch invoices', 500);
@@ -58,6 +63,10 @@ router.get('/invoices', authorize('billing:read'), async (req: any, res: Respons
 // GET /api/v1/billing/invoices/:id
 router.get('/invoices/:id', authorize('billing:read'), async (req: any, res: Response) => {
     try {
+        res.set('ETag', 'false');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
         const invoice = await prisma.invoice.findFirst({
             where: { id: req.params.id, tenant_id: req.tenantId! },
             include: {
@@ -142,7 +151,7 @@ router.post('/checkout', authorize('billing:write'), auditMiddleware({ resource:
                 });
             }
 
-            const admissionIds = data.items.map(i => i.admission_id).filter(id => !!id) as string[];
+            const admissionIds = data.items.map(i => i.admission_id || (i as any).metadata?.admission_id).filter(id => !!id) as string[];
             if (admissionIds.length > 0) {
                 await tx.bedAdmission.updateMany({
                     where: { id: { in: admissionIds } },
@@ -235,6 +244,10 @@ router.post('/invoices/:id/payments', authorize('billing:write'), async (req: Re
 // GET /api/v1/billing/draft/:patientId (keeping existing logic)
 router.get('/draft/:patientId', authorize('billing:read'), async (req: Request, res: Response) => {
     try {
+        res.set('ETag', 'false');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
         const { patientId } = req.params;
         const tenantId = req.tenantId!;
         const admissions = await prisma.bedAdmission.findMany({

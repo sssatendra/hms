@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { coreApi } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { ClinicalDatePicker } from '@/components/shared/ClinicalDatePicker';
 
 export default function BookAppointmentPage() {
@@ -12,7 +13,7 @@ export default function BookAppointmentPage() {
 
   const { data: slots } = useQuery({
     queryKey: ['slots', selectedDoctor, selectedDate],
-    queryFn: () => coreApi.get(`/appointments/available-slots?doctor_id=${selectedDoctor}&date=${selectedDate}`),
+    queryFn: () => coreApi.get<any[]>(`/appointments/available-slots?doctor_id=${selectedDoctor}&date=${selectedDate}`),
     enabled: !!selectedDoctor && !!selectedDate
   });
 

@@ -68,17 +68,22 @@ function QuickAttendance() {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
 
-  const { data: usersData } = useQuery({
-    queryKey: ['staff-availability'],
-    queryFn: () => coreApi.get<any[]>('/users?limit=100')
+  const { data: selfData } = useQuery({
+    queryKey: ['user-me'],
+    queryFn: () => coreApi.get<any>('/auth/me')
   });
 
-  const currentUserData = usersData?.data?.find((u: any) => u.id === user?.id);
-  const status = currentUserData?.availability_status || 'OFF_DUTY';
+  const { data: availabilityData } = useQuery({
+    queryKey: ['staff-availability'],
+    queryFn: () => coreApi.get<any[]>('/users/availability')
+  });
+
+  const status = selfData?.data?.user?.availability_status || 'OFF_DUTY';
 
   const mutation = useMutation({
     mutationFn: (newStatus: string) => coreApi.put(`/users/${user?.id}`, { availability_status: newStatus }),
     onSuccess: (_, newStatus) => {
+      queryClient.invalidateQueries({ queryKey: ['user-me'] });
       queryClient.invalidateQueries({ queryKey: ['staff-availability'] });
       toast.success(`Status updated to ${newStatus.replace('_', ' ')}`);
     },
@@ -146,7 +151,11 @@ function QuickAttendance() {
 
 function DashboardContent() {
   const { user, tenant } = useAuthStore();
-  const query = useQueryClient();
+
+  const { data: availabilityData } = useQuery({
+    queryKey: ['staff-availability'],
+    queryFn: () => coreApi.get<any[]>('/users/availability')
+  });
 
   const { data: pharmacyStats } = useQuery({
     queryKey: ['pharmacy', 'stats', tenant?.id],
@@ -234,8 +243,8 @@ function DashboardContent() {
           />
           <LiquidStatCard
             label="Staff on Duty"
-            value="42"
-            change="+3"
+            value={availabilityData?.data?.filter((u: any) => u.availability_status === 'AVAILABLE').length ?? '0'}
+            change={`Total: ${availabilityData?.data?.length ?? '0'}`}
             trend="up"
             icon={Users}
             color="bg-emerald-500"

@@ -3,7 +3,7 @@
 import { useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAuthStore } from '@/lib/auth-store';
+import { useAuthStore, User, Tenant } from '@/lib/auth-store';
 import { coreApi, ApiError } from '@/lib/api';
 
 export function useAuth() {
@@ -15,7 +15,7 @@ export function useAuth() {
   // Verify session on mount - WITH ERROR HANDLING
   const { data: meData, isLoading: meLoading, error: meError } = useQuery({
     queryKey: ['auth', 'me'],
-    queryFn: () => coreApi.get('/auth/me'),
+    queryFn: () => coreApi.get<{ user: User; tenant: Tenant }>('/auth/me'),
     enabled: isAuthenticated,
     retry: false,
     staleTime: 5 * 60 * 1000,
@@ -41,7 +41,19 @@ export function useAuth() {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: (data: { email: string; password: string; tenant_slug: string }) =>
-      coreApi.post<{ user: any; tenant: any }>('/auth/login', data),
+      coreApi.post<{ user: any; tenant: any; mfa_required?: boolean; mfa_token?: string }>('/auth/login', data),
+    onSuccess: (response) => {
+      if (response.data && !response.data.mfa_required) {
+        setUser(response.data.user, response.data.tenant);
+        router.push('/dashboard');
+      }
+    },
+  });
+
+  // Verify 2FA mutation (during login)
+  const verify2FAMutation = useMutation({
+    mutationFn: (data: { mfa_token: string; otp_code: string }) =>
+      coreApi.post<{ user: any; tenant: any }>('/auth/login/2fa', data),
     onSuccess: (response) => {
       if (response.data) {
         setUser(response.data.user, response.data.tenant);
@@ -89,7 +101,8 @@ export function useAuth() {
   const hasRole = useCallback(
     (...roles: string[]) => {
       if (!user) return false;
-      return roles.includes(user.role);
+      const roleName = typeof user.role === 'string' ? user.role : user.role.name;
+      return roles.includes(roleName);
     },
     [user]
   );
@@ -101,11 +114,14 @@ export function useAuth() {
     isLoading: isLoading || meLoading,
     login,
     logout,
+    verify2FA: verify2FAMutation.mutateAsync,
     register: registerMutation.mutateAsync,
     hasRole,
     loginError: loginMutation.error as ApiError | null,
+    verify2FAError: verify2FAMutation.error as ApiError | null,
     registerError: registerMutation.error as ApiError | null,
     isLoginPending: loginMutation.isPending,
+    isVerify2FAPending: verify2FAMutation.isPending,
     isRegisterPending: registerMutation.isPending,
   };
 }

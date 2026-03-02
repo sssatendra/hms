@@ -59,6 +59,15 @@ export const createApp = (): Application => {
     },
   });
 
+  const mfaLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5, // Stricter for 2FA
+    handler: (req, res) => {
+      sendError(res, ErrorCodes.RATE_LIMITED, 'Too many 2FA attempts. Please try again in 15 minutes.', 429);
+    },
+  });
+
+  app.use('/api/v1/auth/login/2fa', mfaLimiter);
   app.use('/api/v1/auth', authLimiter);
   app.use(limiter);
 

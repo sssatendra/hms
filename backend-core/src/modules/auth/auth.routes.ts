@@ -4,12 +4,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { prisma } from '../../services/prisma';
 import { sendSuccess, sendError, sendCreated, ErrorCodes } from '../../utils/response';
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../utils/jwt';
+import { signAccessToken, signRefreshToken, verifyAccessToken, verifyRefreshToken } from '../../utils/jwt';
 import { config } from '../../config';
 import { logger } from '../../utils/logger';
 import { cacheSet, cacheGet, CacheKeys, getRedisClient } from '../../services/redis';
 import { addAuditLogJob } from '../../services/queue';
 import { authenticate } from '../../middleware/auth';
+import speakeasy from 'speakeasy';
 
 const router = Router();
 
@@ -42,6 +43,15 @@ const registerSchema = z.object({
 const changePasswordSchema = z.object({
   current_password: z.string(),
   new_password: z.string().min(8).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/),
+});
+
+const verify2FASchema = z.object({
+  token: z.string().min(6).max(6),
+});
+
+const login2FASchema = z.object({
+  mfa_token: z.string(),
+  otp_code: z.string().min(6).max(6),
 });
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
@@ -184,6 +194,32 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Update last login
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        last_login_at: new Date(),
+        last_login_ip: req.ip,
+      },
+    });
+
+    // Handle MFA if enabled AND secret is set
+    if (user.two_factor_enabled && user.two_factor_secret) {
+      const mfaToken = signAccessToken({
+        userId: user.id,
+        tenantId: tenant.id,
+        role: user.role.name,
+        email: user.email,
+        mfa_pending: true,
+      });
+
+      sendSuccess(res, {
+        mfa_required: true,
+        mfa_token: mfaToken,
+      });
+      return;
+    }
+
     // Generate tokens
     const sessionId = uuidv4();
     const accessToken = signAccessToken({
@@ -199,15 +235,6 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       userId: user.id,
       tenantId: tenant.id,
       tokenFamily,
-    });
-
-    // Update last login
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        last_login_at: new Date(),
-        last_login_ip: req.ip,
-      },
     });
 
     // Audit log
@@ -340,6 +367,7 @@ router.get('/me', authenticate, async (req: Request, res: Response): Promise<voi
         phone: true,
         avatar_url: true,
         status: true,
+        availability_status: true,
         specialization: true,
         license_number: true,
         tenant_id: true,
@@ -414,6 +442,230 @@ router.post('/change-password', authenticate, async (req: Request, res: Response
       return;
     }
     sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to change password', 500);
+  }
+});
+
+// POST /api/v1/auth/login/2fa - Verify TOTP during login
+router.post('/login/2fa', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { mfa_token, otp_code } = login2FASchema.parse(req.body);
+
+    const payload = verifyAccessToken(mfa_token);
+    if (!payload.mfa_pending) {
+      sendError(res, ErrorCodes.UNAUTHORIZED, 'Invalid MFA token', 401);
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      include: { role: true, tenant: true },
+    });
+
+    if (!user || !user.two_factor_secret) {
+      sendError(res, ErrorCodes.UNAUTHORIZED, '2FA not setup', 401);
+      return;
+    }
+
+    const verified = speakeasy.totp.verify({
+      secret: user.two_factor_secret,
+      encoding: 'base32',
+      token: otp_code,
+    });
+
+    if (!verified) {
+      sendError(res, ErrorCodes.UNAUTHORIZED, 'Invalid 2FA code', 401);
+      return;
+    }
+
+    // Generate final tokens
+    const sessionId = uuidv4();
+    const accessToken = signAccessToken({
+      userId: user.id,
+      tenantId: user.tenant_id,
+      role: user.role.name,
+      email: user.email,
+      sessionId,
+    });
+
+    const tokenFamily = uuidv4();
+    const refreshToken = signRefreshToken({
+      userId: user.id,
+      tenantId: user.tenant_id,
+      tokenFamily,
+    });
+
+    // Audit log
+    await addAuditLogJob({
+      tenantId: user.tenant_id,
+      userId: user.id,
+      action: 'LOGIN',
+      resource: 'auth_2fa',
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
+    // Set cookies
+    res.cookie('access_token', accessToken, {
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000,
+    });
+    res.cookie('refresh_token', refreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    sendSuccess(res, {
+      user: {
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        role: user.role.name,
+        avatar_url: user.avatar_url,
+        tenant_id: user.tenant_id,
+        department_id: user.department_id,
+      },
+      tenant: {
+        id: user.tenant.id,
+        name: user.tenant.name,
+        slug: user.tenant.slug,
+        logo_url: user.tenant.logo_url,
+      },
+    });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      sendError(res, ErrorCodes.VALIDATION_ERROR, 'Validation failed', 400, error.errors);
+      return;
+    }
+    logger.error('2FA login error', {
+      message: error.message,
+      stack: error.stack,
+      error
+    });
+    sendError(res, ErrorCodes.INTERNAL_ERROR, '2FA login failed', 500);
+  }
+});
+
+// POST /api/v1/auth/2fa/setup - Generate TOTP secret
+router.post('/2fa/setup', authenticate, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+    if (!user) {
+      sendError(res, ErrorCodes.NOT_FOUND, 'User not found', 404);
+      return;
+    }
+
+    const secret = speakeasy.generateSecret({
+      name: `HMS (${user.email})`,
+      issuer: 'Hospital Management System',
+    });
+
+    // Store secret temporarily (or overwrite existing)
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { two_factor_secret: secret.base32 },
+    });
+
+    sendSuccess(res, {
+      secret: secret.base32,
+      otpauth_url: secret.otpauth_url,
+    });
+  } catch (error) {
+    logger.error('2FA setup error', { error });
+    sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to setup 2FA', 500);
+  }
+});
+
+// POST /api/v1/auth/2fa/verify - Verify and enable 2FA
+router.post('/2fa/verify', authenticate, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { token } = verify2FASchema.parse(req.body);
+
+    const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+    if (!user || !user.two_factor_secret) {
+      sendError(res, ErrorCodes.BAD_REQUEST, '2FA not setup', 400);
+      return;
+    }
+
+    const verified = speakeasy.totp.verify({
+      secret: user.two_factor_secret,
+      encoding: 'base32',
+      token,
+    });
+
+    if (!verified) {
+      sendError(res, ErrorCodes.UNAUTHORIZED, 'Invalid verification code', 401);
+      return;
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { two_factor_enabled: true },
+    });
+
+    await addAuditLogJob({
+      tenantId: req.user!.tenantId,
+      userId: req.user!.userId,
+      action: 'UPDATE',
+      resource: '2fa_enabled',
+    });
+
+    sendSuccess(res, { message: '2FA enabled successfully' });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      sendError(res, ErrorCodes.VALIDATION_ERROR, 'Validation failed', 400, error.errors);
+      return;
+    }
+    logger.error('2FA verify error', { error });
+    sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to verify 2FA', 500);
+  }
+});
+
+// POST /api/v1/auth/2fa/disable - Disable 2FA
+router.post('/2fa/disable', authenticate, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { token } = verify2FASchema.parse(req.body);
+
+    const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+    if (!user || !user.two_factor_enabled || !user.two_factor_secret) {
+      sendError(res, ErrorCodes.BAD_REQUEST, '2FA not enabled', 400);
+      return;
+    }
+
+    const verified = speakeasy.totp.verify({
+      secret: user.two_factor_secret,
+      encoding: 'base32',
+      token,
+    });
+
+    if (!verified) {
+      sendError(res, ErrorCodes.UNAUTHORIZED, 'Invalid verification code', 401);
+      return;
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        two_factor_enabled: false,
+        two_factor_secret: null,
+      },
+    });
+
+    await addAuditLogJob({
+      tenantId: req.user!.tenantId,
+      userId: req.user!.userId,
+      action: 'UPDATE',
+      resource: '2fa_disabled',
+    });
+
+    sendSuccess(res, { message: '2FA disabled successfully' });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      sendError(res, ErrorCodes.VALIDATION_ERROR, 'Validation failed', 400, error.errors);
+      return;
+    }
+    logger.error('2FA disable error', { error });
+    sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to disable 2FA', 500);
   }
 });
 

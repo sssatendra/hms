@@ -109,12 +109,25 @@ router.get('/orders', authorize('lab:read'), async (req: Request, res: Response)
     const status = req.query.status as string;
     const priority = req.query.priority as string;
     const patient_id = req.query.patient_id as string;
+    const fromDate = req.query.fromDate as string;
+    const toDate = req.query.toDate as string;
     const skip = (page - 1) * limit;
 
     const where: any = { tenant_id: tenantId };
     if (status) where.status = status;
     if (priority) where.priority = priority;
     if (patient_id) where.patient_id = patient_id;
+
+    if (fromDate || toDate) {
+      where.created_at = {};
+      if (fromDate) where.created_at.gte = new Date(fromDate);
+      if (toDate) where.created_at.lte = new Date(toDate);
+    } else {
+      // Default to last 7 days if no range is specified
+      const defaultDate = new Date();
+      defaultDate.setDate(defaultDate.getDate() - 7);
+      where.created_at = { gte: defaultDate };
+    }
 
     // Lab tech can only see their assigned orders or pending ones
     if (req.user!.role === 'LAB_TECH') {
@@ -235,19 +248,23 @@ router.post(
           },
         });
 
-        // Create charges for each lab test
-        await tx.patientCharge.createMany({
-          data: ord.items.map((item) => ({
-            tenant_id: tenantId,
-            patient_id: data.patient_id,
-            description: `Lab Test: ${item.lab_test.name} (${item.lab_test.code})`,
-            amount: item.lab_test.price,
-            quantity: 1,
-            category: 'LAB',
-            service_status: 'READY',
-            performed_by: req.user!.userId,
-          })),
-        });
+        // Create billing charges for each test
+        await Promise.all(
+          ord.items.map((item) =>
+            tx.patientCharge.create({
+              data: {
+                tenant_id: tenantId,
+                patient_id: data.patient_id,
+                admission_id: data.appointment_id || undefined,
+                description: `Lab Test: ${item.lab_test.name} (#${ord.order_number})`,
+                amount: item.lab_test.price,
+                quantity: 1,
+                category: 'LAB',
+                status: 'PENDING',
+              },
+            })
+          )
+        );
 
         return ord;
       });
@@ -317,7 +334,7 @@ router.patch('/orders/:id/results', authorize('lab:process'), async (req: Reques
   try {
     const { id } = req.params;
     const tenantId = req.tenantId!;
-    const { items } = req.body; // [{lab_order_item_id, results, result_notes}]
+    const { items, clinical_notes } = req.body; // [{lab_order_item_id, results, result_notes}], clinical_notes
 
     const order = await prisma.labOrder.findFirst({ where: { id, tenant_id: tenantId } });
     if (!order) {
@@ -325,21 +342,31 @@ router.patch('/orders/:id/results', authorize('lab:process'), async (req: Reques
       return;
     }
 
+    // Update order level clinical notes if provided
+    if (clinical_notes !== undefined) {
+      await prisma.labOrder.update({
+        where: { id },
+        data: { clinical_notes },
+      });
+    }
+
     // Update each result
-    await Promise.all(
-      items.map((item: any) =>
-        prisma.labOrderItem.update({
-          where: { id: item.lab_order_item_id },
-          data: {
-            results: item.results,
-            result_notes: item.result_notes,
-            status: 'COMPLETED',
-            verified_by: req.user!.userId,
-            verified_at: new Date(),
-          },
-        })
-      )
-    );
+    if (items && Array.isArray(items)) {
+      await Promise.all(
+        items.map((item: any) =>
+          prisma.labOrderItem.update({
+            where: { id: item.lab_order_item_id },
+            data: {
+              results: item.results,
+              result_notes: item.result_notes,
+              status: 'COMPLETED',
+              verified_by: req.user!.userId,
+              verified_at: new Date(),
+            },
+          })
+        )
+      );
+    }
 
     sendSuccess(res, { message: 'Results updated successfully' });
   } catch (error) {
@@ -386,6 +413,51 @@ router.get('/orders/:id/file-url/:fileId', authorize('lab:read'), async (req: Re
     sendSuccess(res, { signed_url, file_name: file.file_name, file_type: file.file_type });
   } catch (error) {
     sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to get file URL', 500);
+  }
+});
+
+// INTERNAL: POST /api/v1/lab/internal/file-metadata
+// Called by backend-lab service after successful file upload to MinIO
+router.post('/internal/file-metadata', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const {
+      lab_order_id,
+      tenant_id,
+      uploaded_by,
+      file_name,
+      original_name,
+      file_type,
+      mime_type,
+      file_size,
+      minio_bucket,
+      minio_key,
+      checksum,
+      is_dicom,
+      dicom_metadata
+    } = req.body;
+
+    const labFile = await prisma.labFile.create({
+      data: {
+        lab_order_id,
+        tenant_id,
+        uploaded_by,
+        file_name,
+        original_name,
+        file_type,
+        mime_type,
+        file_size,
+        minio_bucket,
+        minio_key,
+        checksum,
+        is_dicom: !!is_dicom,
+        dicom_metadata: dicom_metadata || null,
+      },
+    });
+
+    sendSuccess(res, labFile, 201);
+  } catch (error) {
+    logger.error('Create lab file metadata error', { error });
+    sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to store file metadata', 500);
   }
 });
 

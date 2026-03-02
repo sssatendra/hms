@@ -46,9 +46,10 @@ export function Sidebar() {
     pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
 
   const filterItems = (items: NavItem[]) =>
-    items.filter((item) =>
-      !item.permission || hasPermission(user?.role || '', item.permission)
-    );
+    items.filter((item) => {
+      const roleName = typeof user?.role === 'string' ? user.role : user?.role?.name || '';
+      return !item.permission || hasPermission(roleName, item.permission);
+    });
 
   return (
     <aside className="w-64 bg-card border-r border-border flex flex-col shadow-sm">
@@ -137,7 +138,7 @@ export function Sidebar() {
             <p className="text-sm font-medium text-foreground truncate">
               {user?.first_name} {user?.last_name}
             </p>
-            <p className="text-xs text-muted-foreground truncate">{user?.role?.replace('_', ' ')}</p>
+            <p className="text-xs text-muted-foreground truncate">{(typeof user?.role === 'string' ? user.role : user?.role?.name || '').replace('_', ' ')}</p>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
         </div>

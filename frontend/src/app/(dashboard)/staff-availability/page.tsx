@@ -45,49 +45,53 @@ export default function StaffAvailabilityPage() {
         available: staff.filter(u => u.availability_status === 'AVAILABLE').length,
         onBreak: staff.filter(u => u.availability_status === 'ON_BREAK').length,
         offDuty: staff.filter(u => u.availability_status === 'OFF_DUTY').length,
-        doctorsActive: staff.filter(u => u.role?.name === 'DOCTOR' && u.availability_status === 'AVAILABLE').length,
+        doctorsActive: staff.filter(u => {
+            const role = typeof u.role === 'string' ? u.role : u.role?.name;
+            return role === 'DOCTOR' && u.availability_status === 'AVAILABLE';
+        }).length,
     };
 
     const filteredStaff = staff.filter(u => {
         const name = `${u.first_name} ${u.last_name}`.toLowerCase();
-        const matchesSearch = name.includes(search.toLowerCase()) || 
-                             (u.specialization || '').toLowerCase().includes(search.toLowerCase());
+        const matchesSearch = name.includes(search.toLowerCase()) ||
+            (u.specialization || '').toLowerCase().includes(search.toLowerCase());
         const matchesStatus = statusFilter === 'ALL' || u.availability_status === statusFilter;
-        const matchesRole = roleFilter === 'ALL' || u.role?.name === roleFilter;
+        const role = typeof u.role === 'string' ? u.role : u.role?.name;
+        const matchesRole = roleFilter === 'ALL' || role === roleFilter;
         return matchesSearch && matchesStatus && matchesRole;
     });
 
     const getStatusConfig = (status: string) => {
         switch (status) {
-            case 'AVAILABLE': return { 
-                label: 'On Duty', 
-                color: 'bg-emerald-500', 
-                text: 'text-emerald-600', 
-                icon: UserCheck, 
+            case 'AVAILABLE': return {
+                label: 'On Duty',
+                color: 'bg-emerald-500',
+                text: 'text-emerald-600',
+                icon: UserCheck,
                 bg: 'bg-emerald-50/50 border-emerald-100 shadow-emerald-100/20',
                 accent: 'bg-emerald-500'
             };
-            case 'ON_BREAK': return { 
-                label: 'On Break', 
-                color: 'bg-amber-500', 
-                text: 'text-amber-600', 
-                icon: Coffee, 
+            case 'ON_BREAK': return {
+                label: 'On Break',
+                color: 'bg-amber-500',
+                text: 'text-amber-600',
+                icon: Coffee,
                 bg: 'bg-amber-50/50 border-amber-100 shadow-amber-100/20',
                 accent: 'bg-amber-500'
             };
-            case 'OFF_DUTY': return { 
-                label: 'Off Duty', 
-                color: 'bg-slate-400', 
-                text: 'text-slate-500', 
-                icon: LogOut, 
+            case 'OFF_DUTY': return {
+                label: 'Off Duty',
+                color: 'bg-slate-400',
+                text: 'text-slate-500',
+                icon: LogOut,
                 bg: 'bg-slate-50 border-slate-200 shadow-slate-100/20',
                 accent: 'bg-slate-400'
             };
-            default: return { 
-                label: 'Unknown', 
-                color: 'bg-slate-200', 
-                text: 'text-slate-400', 
-                icon: Info, 
+            default: return {
+                label: 'Unknown',
+                color: 'bg-slate-200',
+                text: 'text-slate-400',
+                icon: Info,
                 bg: 'bg-white border-slate-100',
                 accent: 'bg-slate-200'
             };
@@ -132,8 +136,8 @@ export default function StaffAvailabilityPage() {
                                         onClick={() => updateStatusMutation.mutate({ userId: currentUser.id, status: st.id })}
                                         className={cn(
                                             "flex items-center gap-2 px-3 py-2 rounded-lg transition-all active:scale-95 group relative",
-                                            staff.find(u => u.id === currentUser.id)?.availability_status === st.id 
-                                                ? "bg-white text-emerald-700 shadow-md" 
+                                            staff.find(u => u.id === currentUser.id)?.availability_status === st.id
+                                                ? "bg-white text-emerald-700 shadow-md"
                                                 : `text-white/60 ${st.color} hover:text-white`
                                         )}
                                     >
@@ -211,7 +215,7 @@ export default function StaffAvailabilityPage() {
 
                     <div className="flex flex-col gap-2">
                         <label className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-1">Staff Role</label>
-                        <select 
+                        <select
                             value={roleFilter}
                             onChange={(e) => setRoleFilter(e.target.value)}
                             className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-blue-100 transition-all cursor-pointer h-[42px]"
@@ -237,8 +241,8 @@ export default function StaffAvailabilityPage() {
                     const st = getStatusConfig(u.availability_status);
                     return (
                         <div key={u.id} className={cn(
-                             "rounded-2xl border p-5 relative group hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 overflow-hidden font-fira-sans",
-                             st.bg
+                            "rounded-2xl border p-5 relative group hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 overflow-hidden font-fira-sans",
+                            st.bg
                         )}>
                             {/* Role specialized background accents */}
                             <div className={cn(
@@ -259,7 +263,7 @@ export default function StaffAvailabilityPage() {
                                             <st.icon size={9} />
                                         </div>
                                     </div>
-                                    
+
                                     <div className="flex flex-col items-end">
                                         <span className={cn(
                                             "px-2 py-0.5 rounded-full text-[7.5px] font-black uppercase tracking-widest border transition-colors bg-white/80 backdrop-blur-sm shadow-sm font-fira-code",
@@ -269,7 +273,7 @@ export default function StaffAvailabilityPage() {
                                             {st.label}
                                         </span>
                                         <p className="text-[9px] font-black uppercase text-emerald-600 tracking-[0.15em] mt-1.5 font-fira-code">
-                                            {u.role?.name?.replace('_', ' ')}
+                                            {(typeof u.role === 'string' ? u.role : u.role?.name || '').replace('_', ' ')}
                                         </p>
                                     </div>
                                 </div>
@@ -304,18 +308,21 @@ export default function StaffAvailabilityPage() {
                                             </div>
                                         </div>
 
-                                        {(currentUser?.role?.name === 'ADMIN' || currentUser?.id === u.id) && (
-                                            <button 
-                                                onClick={() => {
-                                                    const nextStatus = u.availability_status === 'AVAILABLE' ? 'ON_BREAK' : 
-                                                                     u.availability_status === 'ON_BREAK' ? 'OFF_DUTY' : 'AVAILABLE';
-                                                    updateStatusMutation.mutate({ userId: u.id, status: nextStatus });
-                                                }}
-                                                className="w-8 h-8 flex items-center justify-center bg-white border border-emerald-50 rounded-lg hover:bg-emerald-900 hover:text-white transition-all active:scale-90 shadow-sm"
-                                            >
-                                                <MoreVertical size={14} />
-                                            </button>
-                                        )}
+                                        {(() => {
+                                            const role = typeof currentUser?.role === 'string' ? currentUser.role : currentUser?.role?.name;
+                                            return (role === 'ADMIN' || currentUser?.id === u.id) && (
+                                                <button
+                                                    onClick={() => {
+                                                        const nextStatus = u.availability_status === 'AVAILABLE' ? 'ON_BREAK' :
+                                                            u.availability_status === 'ON_BREAK' ? 'OFF_DUTY' : 'AVAILABLE';
+                                                        updateStatusMutation.mutate({ userId: u.id, status: nextStatus });
+                                                    }}
+                                                    className="w-8 h-8 flex items-center justify-center bg-white border border-emerald-50 rounded-lg hover:bg-emerald-900 hover:text-white transition-all active:scale-90 shadow-sm"
+                                                >
+                                                    <MoreVertical size={14} />
+                                                </button>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
                             </div>

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../../services/prisma';
 import { sendSuccess, sendError, sendCreated, ErrorCodes } from '../../utils/response';
 import { authenticate } from '../../middleware/auth';
-import { authorize } from '../../middleware/rbac';
+import { authorize, hasPermission } from '../../middleware/rbac';
 import { config } from '../../config';
 import { cacheDel, CacheKeys } from '../../services/redis';
 import { logger } from '../../utils/logger';
@@ -35,6 +35,8 @@ const updateUserSchema = z.object({
   employee_id: z.string().optional(),
   availability_status: z.enum(['AVAILABLE', 'ON_BREAK', 'OFF_DUTY']).optional(),
   skills: z.union([z.string(), z.array(z.string())]).optional(),
+  settings: z.record(z.any()).optional(),
+  two_factor_enabled: z.boolean().optional(),
 });
 
 // GET /api/v1/users
@@ -180,12 +182,34 @@ router.patch('/:id/status', authorize('users:write'), async (req: Request, res: 
   }
 });
 
-// PUT /api/v1/users/:id
-router.put('/:id', authorize('users:write'), async (req: Request, res: Response): Promise<void> => {
+// PUT /api/v1/users/:id (Modified to allow self-attendance updates)
+router.put('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const tenantId = req.tenantId!;
-    const data = updateUserSchema.parse(req.body);
+    const isSelf = id === req.user!.userId;
+    const hasWritePermission = hasPermission(req.user!.role, 'users:write');
+
+    if (!isSelf && !hasWritePermission) {
+      sendError(res, ErrorCodes.FORBIDDEN, 'Insufficient permissions. Required: users:write', 403);
+      return;
+    }
+
+    const rawData = updateUserSchema.parse(req.body);
+    let data = rawData;
+
+    // Security: If self-updating without admin permissions, ONLY allow specific fields
+    if (isSelf && !hasWritePermission) {
+      data = {};
+      if (rawData.availability_status) data.availability_status = rawData.availability_status;
+      if (rawData.settings) data.settings = rawData.settings;
+      if (rawData.two_factor_enabled !== undefined) data.two_factor_enabled = rawData.two_factor_enabled;
+
+      if (Object.keys(data).length === 0) {
+        sendError(res, ErrorCodes.FORBIDDEN, 'Insufficient permissions to update these fields', 403);
+        return;
+      }
+    }
 
     const user = await prisma.user.findFirst({ where: { id, tenant_id: tenantId } });
     if (!user) {
@@ -326,6 +350,33 @@ router.patch('/notifications/:id/read', authenticate, async (req: Request, res: 
     sendSuccess(res, { message: 'Notification marked as read' });
   } catch (error) {
     sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to mark notification as read', 500);
+  }
+});
+
+// GET /api/v1/users/availability - Publicly visible staff on duty (basic info only)
+router.get('/availability', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const tenantId = req.tenantId!;
+    const users = await prisma.user.findMany({
+      where: {
+        tenant_id: tenantId,
+        is_active: true,
+        status: 'ACTIVE'
+      },
+      select: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        availability_status: true,
+        role: { select: { name: true } },
+        department: { select: { name: true } },
+      },
+    });
+
+    sendSuccess(res, users);
+  } catch (error) {
+    logger.error('Fetch availability error', { error });
+    sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to fetch staff availability', 500);
   }
 });
 

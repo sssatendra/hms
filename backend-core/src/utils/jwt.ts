@@ -7,6 +7,7 @@ export interface JWTPayload {
   role: string;
   email: string;
   sessionId?: string;
+  mfa_pending?: boolean;
 }
 
 export interface RefreshTokenPayload {

@@ -13,10 +13,41 @@ import { useForm } from 'react-hook-form';
 import { Portal } from '@/components/shared/portal';
 import { useCurrency } from '@/hooks/use-currency';
 
+interface InvoiceItem {
+    id: string;
+    description: string;
+    quantity: number;
+    unit_price: number;
+    total: number;
+    category: string;
+}
+
+interface Patient {
+    id: string;
+    first_name: string;
+    last_name: string;
+    mrn: string;
+}
+
+interface Invoice {
+    id: string;
+    invoice_number: string;
+    status: string;
+    created_at: string;
+    total: number;
+    subtotal: number;
+    discount: number;
+    paid_amount: number;
+    balance_due: number;
+    advance_paid: number;
+    patient: Patient;
+    items: InvoiceItem[];
+}
+
 export default function BillingPage() {
     const [search, setSearch] = useState('');
     const [showNewInvoice, setShowNewInvoice] = useState(false);
-    const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+    const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
     const queryClient = useQueryClient();
     const { format } = useCurrency();
 
@@ -25,7 +56,8 @@ export default function BillingPage() {
         queryFn: async () => {
             const res = await api.get('/billing/invoices');
             return res.data;
-        }
+        },
+        staleTime: 0
     });
 
     const getStatusColor = (status: string) => {
@@ -57,6 +89,45 @@ export default function BillingPage() {
                     Create Invoice
                 </button>
             </div>
+
+            <style jsx global>{`
+                @media print {
+                    @page {
+                        margin: 10mm;
+                        size: auto;
+                    }
+                    body {
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    body * {
+                        visibility: hidden !important;
+                    }
+                    #printable-invoice, #printable-invoice * {
+                        visibility: visible !important;
+                    }
+                    #printable-invoice {
+                        display: block !important;
+                        position: absolute !important;
+                        left: 0 !important;
+                        top: 0 !important;
+                        width: 100% !important;
+                        max-width: 210mm !important;
+                        background: white !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        box-sizing: border-box !important;
+                        z-index: 9999 !important;
+                    }
+                    html, body {
+                        overflow: visible !important;
+                        height: auto !important;
+                    }
+                    .print-hidden, .print\:hidden {
+                        display: none !important;
+                    }
+                }
+            `}</style>
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -107,11 +178,11 @@ export default function BillingPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
-                            {invoices?.filter((inv: any) =>
+                            {invoices?.filter((inv: Invoice) =>
                                 inv.invoice_number.toLowerCase().includes(search.toLowerCase()) ||
                                 inv.patient.first_name.toLowerCase().includes(search.toLowerCase()) ||
                                 inv.patient.last_name.toLowerCase().includes(search.toLowerCase())
-                            ).map((invoice: any) => (
+                            ).map((invoice: Invoice) => (
                                 <tr key={invoice.id} className="hover:bg-emerald-50/30 transition-colors border-b border-emerald-50/50 last:border-0 group">
                                     <td className="px-5 py-3 font-fira-code font-black text-[10px] text-emerald-700">{invoice.invoice_number}</td>
                                     <td className="px-5 py-3">
@@ -172,13 +243,13 @@ export default function BillingPage() {
     );
 }
 
-function NewInvoiceModal({ onClose }: any) {
+function NewInvoiceModal({ onClose }: { onClose: () => void }) {
     const [patientId, setPatientId] = useState('');
-    const [items, setItems] = useState<any[]>([]);
+    const [items, setItems] = useState<InvoiceItem[]>([]);
     const queryClient = useQueryClient();
     const { format } = useCurrency();
     // Load patients for selection
-    const { data: patients } = useQuery({ queryKey: ['patients'], queryFn: async () => (await api.get('/patients')).data });
+    const { data: patients } = useQuery({ queryKey: ['patients'], queryFn: async () => (await api.get('/patients')).data as Patient[] });
 
     // Load draft for aggregate billing if patientId is selected
     const { data: draftData, isLoading: isLoadingDraft } = useQuery({
@@ -188,13 +259,15 @@ function NewInvoiceModal({ onClose }: any) {
             const res = await api.get(`/billing/draft/${patientId}`);
             return res.data;
         },
-        enabled: !!patientId
+        enabled: !!patientId,
+        staleTime: 0
     });
 
     const checkoutMutation = useMutation({
-        mutationFn: async (data: any) => await api.post('/billing/checkout', data),
+        mutationFn: async (data: { patient_id: string; items: InvoiceItem[]; advance_paid: number }) => await api.post('/billing/checkout', data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['invoices'] });
+            queryClient.invalidateQueries({ queryKey: ['draft-invoice'] });
             onClose();
         }
     });
@@ -243,7 +316,7 @@ function NewInvoiceModal({ onClose }: any) {
                                 className="w-full px-3 py-2 bg-white border border-emerald-100 rounded-lg text-[10px] uppercase font-black tracking-widest transition-all focus:ring-2 focus:ring-emerald-100 outline-none h-[38px] font-fira-code"
                             >
                                 <option value="">CHOOSE PATIENT...</option>
-                                {patients?.map((p: any) => (
+                                {patients?.map((p: Patient) => (
                                     <option key={p.id} value={p.id}>{p.first_name} {p.last_name} ({p.mrn})</option>
                                 ))}
                             </select>
@@ -345,14 +418,15 @@ function NewInvoiceModal({ onClose }: any) {
     );
 }
 
-function InvoiceDetailModal({ id, onClose }: any) {
+function InvoiceDetailModal({ id, onClose }: { id: string; onClose: () => void }) {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const queryClient = useQueryClient();
     const { format } = useCurrency();
 
     const { data: invoice, isLoading, refetch } = useQuery({
         queryKey: ['invoice', id],
-        queryFn: async () => (await api.get(`/billing/invoices/${id}`)).data
+        queryFn: async () => (await api.get(`/billing/invoices/${id}`)).data as Invoice,
+        staleTime: 0
     });
 
     if (isLoading) return null;
@@ -427,7 +501,7 @@ function InvoiceDetailModal({ id, onClose }: any) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-emerald-50/50">
-                                {invoice.items.map((item: any) => (
+                                {invoice?.items.map((item: InvoiceItem) => (
                                     <tr key={item.id} className="group transition-colors">
                                         <td className="py-2.5 text-[10px] font-black text-slate-700 uppercase tracking-tight group-hover:text-emerald-700 transition-colors">{item.description}</td>
                                         <td className="py-2.5 text-center text-[10px] font-black text-slate-400 font-fira-code">{item.quantity}</td>
@@ -485,28 +559,33 @@ function InvoiceDetailModal({ id, onClose }: any) {
                                 <span className="text-[7.5px] font-black uppercase text-emerald-700 tracking-[0.2em] font-fira-code">BALANCE DUE</span>
                                 <span className="text-xl font-black text-emerald-700 tracking-tighter tabular-nums">{format(invoice.balance_due)}</span>
                             </div>
+
+                            <Portal>
+                                <PrintableInvoice invoice={invoice} />
+                            </Portal>
                         </div>
+
+                        {showPaymentModal && (
+                            <Portal>
+                                <PaymentModal
+                                    invoice={invoice}
+                                    onClose={() => {
+                                        setShowPaymentModal(false);
+                                        refetch();
+                                        queryClient.invalidateQueries({ queryKey: ['invoices'] });
+                                    }}
+                                />
+                            </Portal>
+                        )}
                     </div>
                 </div>
-
-                {showPaymentModal && (
-                    <Portal>
-                        <PaymentModal
-                            invoice={invoice}
-                            onClose={() => {
-                                setShowPaymentModal(false);
-                                refetch();
-                                queryClient.invalidateQueries({ queryKey: ['invoices'] });
-                            }}
-                        />
-                    </Portal>
-                )}
             </div>
         </div>
     );
 }
 
-function PaymentModal({ invoice, onClose }: { invoice: any, onClose: () => void }) {
+function PaymentModal({ invoice, onClose }: { invoice: Invoice; onClose: () => void }) {
+    const queryClient = useQueryClient();
     const { register, handleSubmit } = useForm({
         defaultValues: {
             amount: Number(invoice.balance_due),
@@ -518,8 +597,12 @@ function PaymentModal({ invoice, onClose }: { invoice: any, onClose: () => void 
     const { format, currency } = useCurrency();
 
     const paymentMutation = useMutation({
-        mutationFn: (data: any) => api.post(`/billing/invoices/${invoice.id}/payments`, data),
-        onSuccess: () => onClose()
+        mutationFn: (data: { amount: number; method: string; notes: string }) => api.post(`/billing/invoices/${invoice.id}/payments`, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['invoices'] });
+            queryClient.invalidateQueries({ queryKey: ['draft-invoice'] });
+            onClose();
+        }
     });
 
     return (
@@ -566,6 +649,140 @@ function PaymentModal({ invoice, onClose }: { invoice: any, onClose: () => void 
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    );
+}
+
+function PrintableInvoice({ invoice }: { invoice: Invoice }) {
+    const { format } = useCurrency();
+
+    return (
+        <div id="printable-invoice" className="hidden print:block bg-white text-slate-900 font-sans p-8 w-full max-w-[210mm] mx-auto">
+            {/* Letterhead */}
+            <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6 mb-8">
+                <div className="flex-1">
+                    <h1 className="text-2xl font-black tracking-tighter text-slate-900 mb-1 leading-none uppercase">HMS CORE CENTER</h1>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2">Healthcare Excellence & Research</p>
+                    <div className="mt-6 text-[9px] text-slate-600 space-y-1 font-bold uppercase tracking-tight">
+                        <p>123 Medical Avenue, Health City</p>
+                        <p>Phone: +1 (555) 000-1111 | Email: billing@hmscore.com</p>
+                    </div>
+                </div>
+                <div className="text-right">
+                    <h2 className="text-4xl font-black text-slate-200 tracking-tighter mb-6 leading-none uppercase">Invoice</h2>
+                    <div className="space-y-3">
+                        <div>
+                            <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Invoice Number</p>
+                            <p className="text-xs font-black text-slate-900">{invoice.invoice_number}</p>
+                        </div>
+                        <div>
+                            <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Date Issued</p>
+                            <p className="text-[9px] font-black text-slate-900">{formatDate(new Date(invoice.created_at), 'MMMM dd, yyyy')}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Bill To & Summary */}
+            <div className="grid grid-cols-2 gap-12 mb-12">
+                <div className="bg-slate-50 p-7 rounded-2xl border border-slate-100">
+                    <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Patient Statement For</h3>
+                    <p className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-2">{invoice.patient.first_name} {invoice.patient.last_name}</p>
+                    <div className="flex items-center gap-6 text-[10px]">
+                        <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-400 uppercase tracking-widest">Patient MRN:</span>
+                            <span className="font-black text-slate-900">{invoice.patient.mrn}</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex flex-col justify-center px-4">
+                    <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Financial Status</h3>
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Current Status</span>
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${invoice.status === 'PAID' ? 'text-emerald-600' : 'text-rose-600'}`}>{invoice.status}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Issuing Authority</span>
+                            <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight">Accounts Dept.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Itemized Table */}
+            <div className="mb-6">
+                <table className="w-full border-collapse">
+                    <thead>
+                        <tr className="bg-slate-900 text-white">
+                            <th className="py-3 px-4 text-left text-[9px] font-black uppercase tracking-widest border border-slate-900">Service Description</th>
+                            <th className="py-3 px-4 text-center text-[9px] font-black uppercase tracking-widest border border-slate-900 w-20">Qty</th>
+                            <th className="py-3 px-4 text-right text-[9px] font-black uppercase tracking-widest border border-slate-900 w-28">Unit Price</th>
+                            <th className="py-3 px-4 text-right text-[9px] font-black uppercase tracking-widest border border-slate-900 w-28">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 border-b-2 border-slate-900">
+                        {invoice.items.map((item: InvoiceItem) => (
+                            <tr key={item.id} className="hover:bg-slate-50">
+                                <td className="py-2 px-4 text-[10px] text-slate-700 uppercase tracking-tight border-x border-slate-50">{item.description}</td>
+                                <td className="py-2 px-4 text-center text-[10px] text-slate-900 border-x border-slate-50">{item.quantity}</td>
+                                <td className="py-2 px-4 text-right text-[10px] text-slate-900 border-x border-slate-50">{format(item.unit_price)}</td>
+                                <td className="py-2 px-4 text-right text-[10px] text-slate-900 border-x border-slate-50">{format(item.total)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Financial Summary */}
+            <div className="flex justify-between items-start mb-10 px-2">
+                <div className="max-w-[120px]">
+                    <h4 className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Terms & Notes</h4>
+                    <p className="text-[7px] text-slate-400 leading-relaxed uppercase font-bold">Standard hospital billing terms apply. Claims must be settled as per policy. This is an electronic record.</p>
+                </div>
+                <div className="w-72 space-y-3 bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <div className="flex justify-between items-center text-[9px]">
+                        <span className="font-bold text-slate-400 uppercase tracking-widest">Gross Subtotal</span>
+                        <span className="font-black text-slate-900">{format(invoice.subtotal)}</span>
+                    </div>
+                    {Number(invoice.discount) > 0 && (
+                        <div className="flex justify-between items-center text-[9px] text-rose-600 font-bold">
+                            <span className="uppercase tracking-widest">Discount Applied</span>
+                            <span>-{format(invoice.discount)}</span>
+                        </div>
+                    )}
+                    <div className="pt-2 border-t border-slate-200 flex justify-between items-center text-[10px] font-black">
+                        <span className="uppercase tracking-widest text-slate-900">Total Invoice Amount</span>
+                        <span className="text-slate-900">{format(invoice.total)}</span>
+                    </div>
+                    {(Number(invoice.advance_paid) > 0 || Number(invoice.paid_amount) > 0) && (
+                        <div className="flex justify-between items-center text-[10px] text-emerald-600 font-bold">
+                            <span className="uppercase tracking-widest">Total Paid Amount</span>
+                            <span>-{format(Number(invoice.advance_paid) + Number(invoice.paid_amount))}</span>
+                        </div>
+                    )}
+                    <div className="pt-4 mt-2 border-t-2 border-slate-900 flex justify-between items-baseline">
+                        <span className="text-[12px] font-black uppercase text-slate-900 tracking-[0.2em] leading-none">Remaining Balance</span>
+                        <span className="text-2xl font-black text-slate-900 tracking-tighter leading-none whitespace-nowrap">{format(invoice.balance_due)}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-slate-100 pt-10 text-center">
+                <p className="text-[11px] font-black text-slate-900 uppercase tracking-[0.4em] mb-4">Official Hospital Document</p>
+                <div className="flex justify-center gap-12 mb-10 opacity-50">
+                    <div className="w-32 border-b border-slate-900/20 pt-10">
+                        <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Cashier Sign</p>
+                    </div>
+                    <div className="w-32 border-b border-slate-900/20 pt-10">
+                        <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Hospital Seal</p>
+                    </div>
+                </div>
+                <p className="text-[8px] text-slate-400 font-bold max-w-lg mx-auto leading-relaxed uppercase tracking-tight">
+                    Thank you for choosing HMS CORE CENTER. This is a computer-generated billing statement. For any discrepancies, please reach out to our help desk within 7 working days.
+                </p>
             </div>
         </div>
     );

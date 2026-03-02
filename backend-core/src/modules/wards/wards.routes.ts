@@ -428,7 +428,7 @@ router.get('/admissions/:id', authorize('wards:read'), async (req: any, res: Res
             }),
             prisma.payment.findMany({
                 where: { admission_id: { in: admissionIds }, tenant_id: tenantId },
-                orderBy: { created_at: 'desc' }
+                orderBy: { payment_date: 'desc' }
             })
         ]);
 

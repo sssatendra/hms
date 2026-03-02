@@ -40,16 +40,16 @@ export default function WardsPage() {
     const { data: wards, isLoading } = useQuery({
         queryKey: ['wards'],
         queryFn: async () => {
-            const res = await api.get('/wards');
-            return res.data;
+            const res = await api.get<any[]>('/wards');
+            return res.data || [];
         }
     });
 
     const { data: activeAdmissions } = useQuery({
         queryKey: ['active-admissions'],
         queryFn: async () => {
-            const res = await api.get('/wards');
-            const allBeds = res.data.flatMap((w: any) => w.beds);
+            const res = await api.get<any[]>('/wards');
+            const allBeds = res.data?.flatMap((w: any) => w.beds) || [];
             return allBeds.filter((b: any) => b.status === 'OCCUPIED');
         }
     });
@@ -57,8 +57,8 @@ export default function WardsPage() {
     const { data: patients } = useQuery({
         queryKey: ['patients'],
         queryFn: async () => {
-            const res = await api.get('/patients');
-            return res.data;
+            const res = await api.get<any[]>('/patients');
+            return res.data || [];
         }
     });
 
@@ -457,7 +457,7 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
     const { data: admission, isLoading } = useQuery({
         queryKey: ['admission', id],
         queryFn: async () => {
-            const res = await api.get(`/wards/admissions/${id}`);
+            const res = await api.get<any>(`/wards/admissions/${id}`);
             return res.data;
         }
     });
@@ -488,8 +488,8 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
         queryKey: ['med-search', medSearch],
         queryFn: async () => {
             if (medSearch.length < 2) return [];
-            const res = await api.get(`/pharmacy/inventory?search=${medSearch}`);
-            return res.data;
+            const res = await api.get<any[]>(`/pharmacy/inventory?search=${medSearch}`);
+            return res.data || [];
         },
         enabled: medSearch.length >= 2
     });
@@ -1293,7 +1293,7 @@ function EditWardModal({ ward, onClose }: { ward: any, onClose: () => void }) {
 
 function TransferModal({ admissionId, currentBed, onClose }: { admissionId: string, currentBed: string, onClose: () => void }) {
     const queryClient = useQueryClient();
-    const { data: wards } = useQuery({ queryKey: ['wards'], queryFn: async () => (await api.get('/wards')).data });
+    const { data: wards } = useQuery({ queryKey: ['wards'], queryFn: async () => (await api.get<any[]>('/wards')).data || [] });
     const { register, handleSubmit, watch } = useForm();
     const selectedWardId = watch('ward_id');
     const { format: currencyFormat } = useCurrency();

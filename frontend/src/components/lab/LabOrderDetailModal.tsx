@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     X, User, FlaskConical, Clock, CheckCircle,
@@ -20,13 +20,28 @@ interface LabOrderDetailModalProps {
 export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetailModalProps) {
     const queryClient = useQueryClient();
     const [results, setResults] = useState<Record<string, { val: string, note: string }>>({});
+    const [clinicalNotes, setClinicalNotes] = useState('');
     const [isUpdating, setIsUpdating] = useState(false);
     const [activeFileId, setActiveFileId] = useState<string | null>(null);
 
-    const { data: order, isLoading } = useQuery({
+    const { data: order, isLoading } = useQuery<any>({
         queryKey: ['lab', 'orders', orderId],
         queryFn: () => coreApi.get<any>(`/lab/orders/${orderId}`),
     });
+
+    useEffect(() => {
+        if (order?.data?.items) {
+            const initialResults: any = {};
+            order.data.items.forEach((item: any) => {
+                initialResults[item.id] = {
+                    val: item.results || '',
+                    note: item.result_notes || ''
+                };
+            });
+            setResults(initialResults);
+            setClinicalNotes(order.data.clinical_notes || '');
+        }
+    }, [order]);
 
     const updateStatusMutation = useMutation({
         mutationFn: ({ status }: { status: string }) =>
@@ -38,35 +53,190 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
     });
 
     const updateResultsMutation = useMutation({
-        mutationFn: (items: any[]) =>
-            coreApi.patch(`/lab/orders/${orderId}/results`, { items }),
+        mutationFn: (payload: { items?: any[], clinical_notes?: string }) =>
+            coreApi.patch(`/lab/orders/${orderId}/results`, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['lab', 'orders'] });
+            queryClient.invalidateQueries({ queryKey: ['lab', 'orders', orderId] });
             setIsUpdating(false);
+        },
+        onError: (error: any) => {
+            alert(`Execution failed: ${error.message || 'Unauthorized or Server Error'}`);
         }
     });
 
-    const handleStatusTransition = (status: string) => {
-        updateStatusMutation.mutate({ status });
+    const handleStatusTransition = (newStatus: string) => {
+        if (newStatus === 'COMPLETED') {
+            const items = Object.entries(results).map(([id, resultData]: [string, any]) => ({
+                lab_order_item_id: id,
+                results: resultData.val,
+                result_notes: resultData.note
+            }));
+            updateResultsMutation.mutate({ items, clinical_notes: clinicalNotes }, {
+                onSuccess: () => {
+                    updateStatusMutation.mutate({ status: newStatus });
+                }
+            });
+        } else {
+            updateStatusMutation.mutate({ status: newStatus });
+        }
     };
 
     const handleResultChange = (itemId: string, field: 'val' | 'note', value: string) => {
         setResults(prev => ({
             ...prev,
             [itemId]: {
-                ...prev[itemId],
+                ...(prev[itemId] || { val: '', note: '' }),
                 [field]: value
             }
         }));
     };
 
     const saveResults = () => {
-        const items = Object.entries(results).map(([id, data]) => ({
+        const items = Object.entries(results).map(([id, resultData]: [string, any]) => ({
             lab_order_item_id: id,
-            results: data.val,
-            result_notes: data.note
+            results: resultData.val,
+            result_notes: resultData.note
         }));
-        updateResultsMutation.mutate(items);
+        updateResultsMutation.mutate({ items, clinical_notes: clinicalNotes });
+    };
+
+    const submitSingleItem = (itemId: string) => {
+        const itemResult = results[itemId];
+        if (!itemResult) return;
+
+        updateResultsMutation.mutate({
+            items: [{
+                lab_order_item_id: itemId,
+                results: itemResult.val,
+                result_notes: itemResult.note
+            }]
+        });
+    };
+
+    const printReport = () => {
+        const data = order?.data;
+        if (!data) return;
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) return;
+
+        const html = `
+            <html>
+                <head>
+                    <title>Lab Report - ${data.order_number}</title>
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+                        body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; line-height: 1.5; }
+                        .header { display: flex; justify-content: space-between; border-bottom: 3px solid #059669; padding-bottom: 20px; margin-bottom: 30px; }
+                        .hospital-name { font-size: 24px; font-weight: 900; color: #059669; text-transform: uppercase; letter-spacing: -0.025em; }
+                        .report-title { font-size: 14px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; }
+                        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; background: #f8fafc; padding: 25px; rounded: 12px; }
+                        .info-section h4 { font-size: 10px; text-transform: uppercase; color: #94a3b8; margin: 0 0 8px 0; letter-spacing: 0.05em; }
+                        .info-section p { margin: 0; font-size: 14px; font-weight: 700; }
+                        table { width: 100%; border-collapse: collapse; margin-block: 30px; }
+                        th { background: #f1f5f9; padding: 12px 15px; text-align: left; font-size: 11px; text-transform: uppercase; color: #475569; border-bottom: 2px solid #e2e8f0; }
+                        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+                        .footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; display: flex; justify-content: space-between; }
+                        .signature { margin-top: 40px; }
+                        @media print { .no-print { display: none; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div>
+                            <div class="hospital-name">HMS Laboratory</div>
+                            <div class="report-title">Diagnostic Investigation Report</div>
+                        </div>
+                        <div style="text-align: right">
+                            <div style="font-weight: 900; font-size: 18px;">#${data.order_number}</div>
+                            <div style="font-size: 12px; color: #64748b;">${new Date().toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-section">
+                            <h4>Patient Information</h4>
+                            <p>${data.patient?.first_name} ${data.patient?.last_name}</p>
+                            <p style="font-weight: 400; font-size: 12px; margin-top: 4px;">MRN: ${data.patient?.mrn} | ${data.patient?.gender} | ${data.patient?.age} Years</p>
+                        </div>
+                        <div class="info-section">
+                            <h4>Ordering Clinician</h4>
+                            <p>Dr. ${data.doctor?.last_name}</p>
+                            <p style="font-weight: 400; font-size: 12px; margin-top: 4px;">Dept: ${data.department?.name || 'General Medicine'}</p>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Test Investigation</th>
+                                <th>Results / Findings</th>
+                                <th>Interpretive Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${(data.items || []).map((item: any) => `
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 700">${item.lab_test?.name}</div>
+                                        <div style="font-size: 10px; color: #64748b; margin-top: 2px;">CODE: ${item.lab_test?.code}</div>
+                                    </td>
+                                    <td style="font-weight: 700; color: #0f172a">${item.results || 'Pending Authentication'}</td>
+                                    <td style="color: #475569; font-style: italic">${item.result_notes || 'No significant remarks'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+
+                    ${data.clinical_notes ? `
+                        <div style="margin-top: 30px; padding: 20px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px;">
+                            <h4 style="font-size: 10px; text-transform: uppercase; color: #b45309; margin: 0 0 10px 0;">Clinical History / Notes</h4>
+                            <p style="margin: 0; font-size: 13px; color: #92400e;">${data.clinical_notes}</p>
+                        </div>
+                    ` : ''}
+
+                    <div class="signature">
+                        <div style="width: 200px; border-bottom: 1px solid #333; margin-bottom: 5px;"></div>
+                        <p style="margin: 0; font-size: 12px; font-weight: 700;">Pathologist / Lab In-charge</p>
+                    </div>
+
+                    <div class="footer">
+                        <div>HMS Health Information Systems</div>
+                        <div>Generated on ${new Date().toLocaleString()}</div>
+                    </div>
+
+                    ${(data.files && data.files.length > 0) ? `
+                        <div style="margin-top: 40px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
+                            <h4 style="font-size: 10px; text-transform: uppercase; color: #64748b; margin-bottom: 15px; letter-spacing: 0.1em;">Attached Diagnostic Artifacts</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                ${data.files.map((file: any) => `
+                                    <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px;">📁</div>
+                                        <div>
+                                            <div style="font-size: 12px; font-weight: 700;">${file.file_name}</div>
+                                            <div style="font-size: 10px; color: #94a3b8; text-transform: uppercase;">${file.file_type} • Uploaded ${new Date(file.created_at).toLocaleDateString()}</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <p style="font-size: 9px; color: #94a3b8; margin-top: 10px; font-style: italic;">* Digital copies available in the clinical portal.</p>
+                        </div>
+                    ` : ''}
+                    
+                    <script>
+                        window.onload = () => { 
+                            setTimeout(() => {
+                                window.print(); 
+                                // window.close(); // Optional: close after print
+                            }, 500);
+                        }
+                    </script>
+                </body>
+            </html>
+        `;
+
+        printWindow.document.write(html);
+        printWindow.document.close();
     };
 
     if (isLoading || !order?.data) {
@@ -124,9 +294,18 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                                 <p className="text-[8.5px] text-muted-foreground font-black uppercase tracking-widest mt-0.5 opacity-60 font-fira-code">Created on {formatDateTime(data.created_at)}</p>
                             </div>
                         </div>
-                        <button onClick={onClose} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
-                            <X className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={printReport}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-border rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-muted transition-all font-fira-code"
+                            >
+                                <FileText className="h-3.5 w-3.5 text-primary" />
+                                Extract Report
+                            </button>
+                            <button onClick={onClose} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-border">
@@ -135,7 +314,7 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                             {/* Patient Card */}
                             <div className="bg-muted/10 rounded-xl p-3.5 border border-border/50 flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-xl bg-background border-2 border-border text-primary flex items-center justify-center text-lg font-black">
-                                    {data.patient?.first_name[0]}
+                                    {data.patient?.first_name?.[0]}
                                 </div>
                                 <div className="flex-1">
                                     <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5 opacity-50 font-fira-code">PATIENT RECIPIENT</p>
@@ -185,7 +364,7 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                                         <Beaker className="h-3.5 w-3.5 text-primary" />
                                         Investigation results
                                     </h3>
-                                    {status !== 'COMPLETED' && (
+                                    {status !== 'CANCELLED' && status !== 'COMPLETED' && (
                                         <button
                                             onClick={saveResults}
                                             disabled={updateResultsMutation.isPending}
@@ -206,45 +385,52 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                                                     </span>
                                                     <h4 className="text-xs font-black">{item.lab_test?.name}</h4>
                                                 </div>
-                                                <div className="text-right">
-                                                    <p className="text-[8.5px] font-black text-muted-foreground uppercase tracking-widest opacity-50 font-fira-code">Status</p>
-                                                    <p className={cn("text-[9px] font-black uppercase tracking-tighter font-fira-code",
-                                                        item.status === 'COMPLETED' ? 'text-emerald-600' : 'text-amber-600'
-                                                    )}>{item.status}</p>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="text-right">
+                                                        <p className="text-[8.5px] font-black text-muted-foreground uppercase tracking-widest opacity-50 font-fira-code">Status</p>
+                                                        <p className={cn("text-[9px] font-black uppercase tracking-tighter font-fira-code",
+                                                            item.status === 'COMPLETED' ? 'text-emerald-600' : 'text-amber-600'
+                                                        )}>{item.status}</p>
+                                                    </div>
+                                                    {status !== 'COMPLETED' && status !== 'CANCELLED' && item.status !== 'COMPLETED' && (
+                                                        <button
+                                                            onClick={() => submitSingleItem(item.id)}
+                                                            className="h-7 px-3 bg-emerald-600 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center gap-1 active:scale-95 shadow-lg shadow-emerald-500/10"
+                                                        >
+                                                            <CheckCircle size={10} />
+                                                            Submit
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 <div>
                                                     <label className="text-[8.5px] font-black uppercase text-muted-foreground tracking-widest block mb-1 opacity-60 font-fira-code">Findings</label>
-                                                    {status === 'COMPLETED' ? (
-                                                        <p className="text-xs font-black text-slate-900 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100 min-h-[36px]">
-                                                            {item.results || 'No quantitative finding recorded'}
-                                                        </p>
-                                                    ) : (
-                                                        <input
-                                                            type="text"
-                                                            defaultValue={item.results}
-                                                            onChange={(e) => handleResultChange(item.id, 'val', e.target.value)}
-                                                            placeholder="Qualitative finding..."
-                                                            className="w-full px-2.5 py-1.5 bg-muted/10 border border-border rounded-lg text-xs font-bold outline-none focus:border-primary transition-all"
-                                                        />
-                                                    )}
+                                                    <input
+                                                        type="text"
+                                                        value={results[item.id]?.val ?? ''}
+                                                        onChange={(e) => handleResultChange(item.id, 'val', e.target.value)}
+                                                        placeholder="Qualitative finding..."
+                                                        readOnly={status === 'COMPLETED'}
+                                                        className={cn(
+                                                            "w-full px-2.5 py-1.5 bg-muted/10 border border-border rounded-lg text-xs font-bold outline-none focus:border-primary transition-all",
+                                                            status === 'COMPLETED' && "bg-emerald-50/10 border-emerald-100 opacity-80 cursor-not-allowed"
+                                                        )}
+                                                    />
                                                 </div>
                                                 <div>
                                                     <label className="text-[8.5px] font-black uppercase text-muted-foreground tracking-widest block mb-1 opacity-60 font-fira-code">Interpretive Notes</label>
-                                                    {status === 'COMPLETED' ? (
-                                                        <p className="text-xs font-bold text-slate-600 italic bg-slate-50/50 p-2.5 rounded-lg border border-slate-100 min-h-[36px]">
-                                                            {item.result_notes || 'No interpretive remarks provided'}
-                                                        </p>
-                                                    ) : (
-                                                        <input
-                                                            type="text"
-                                                            defaultValue={item.result_notes}
-                                                            onChange={(e) => handleResultChange(item.id, 'note', e.target.value)}
-                                                            placeholder="Clinical remarks..."
-                                                            className="w-full px-2.5 py-1.5 bg-muted/10 border border-border rounded-lg text-xs font-bold outline-none focus:border-primary transition-all"
-                                                        />
-                                                    )}
+                                                    <input
+                                                        type="text"
+                                                        value={results[item.id]?.note ?? ''}
+                                                        onChange={(e) => handleResultChange(item.id, 'note', e.target.value)}
+                                                        placeholder="Clinical remarks..."
+                                                        readOnly={status === 'COMPLETED'}
+                                                        className={cn(
+                                                            "w-full px-2.5 py-1.5 bg-muted/10 border border-border rounded-lg text-xs font-bold outline-none focus:border-primary transition-all",
+                                                            status === 'COMPLETED' && "bg-emerald-50/10 border-emerald-100 opacity-80 cursor-not-allowed"
+                                                        )}
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
@@ -287,15 +473,32 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                                 </div>
                             </div>
 
-                            {/* Instructions */}
-                            <div className="bg-amber-50/50 rounded-xl p-4 border border-amber-100">
+                            {/* Instructions / Clinical Context */}
+                            <div className="bg-amber-50/50 rounded-xl p-4 border border-amber-100 flex flex-col gap-3">
                                 <div className="flex items-start gap-3">
                                     <AlertCircle className="h-3.5 w-3.5 text-amber-600 mt-0.5" />
-                                    <div>
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-amber-900 mb-1 font-fira-code">Clinical Frame</p>
-                                        <p className="text-[10px] font-black text-amber-700/80 leading-relaxed italic uppercase">
-                                            "{data.clinical_notes || 'No contextual insights'}"
-                                        </p>
+                                    <div className="flex-1">
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-amber-900 font-fira-code">Clinical Frame</p>
+                                            {status !== 'COMPLETED' && status !== 'CANCELLED' && (
+                                                <button
+                                                    onClick={() => updateResultsMutation.mutate({ clinical_notes: clinicalNotes })}
+                                                    className="px-2 py-0.5 bg-amber-600 text-white rounded text-[8.5px] font-black uppercase tracking-widest hover:bg-amber-700 transition-all shadow-sm"
+                                                >
+                                                    Save Insights
+                                                </button>
+                                            )}
+                                        </div>
+                                        <textarea
+                                            value={clinicalNotes}
+                                            onChange={(e) => setClinicalNotes(e.target.value)}
+                                            readOnly={status === 'COMPLETED'}
+                                            placeholder="Add contextual insights here..."
+                                            className={cn(
+                                                "w-full bg-white/50 border border-amber-200 rounded-lg p-2 text-[10px] font-medium text-amber-900 outline-none focus:border-amber-400 min-h-[80px] resize-none transition-all placeholder:text-amber-900/40",
+                                                status === 'COMPLETED' && "bg-transparent border-transparent cursor-default italic px-0 py-0"
+                                            )}
+                                        />
                                     </div>
                                 </div>
                             </div>

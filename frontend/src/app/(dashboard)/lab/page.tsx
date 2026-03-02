@@ -20,6 +20,7 @@ function LabPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
+  const [dateRange, setDateRange] = useState('7');
   const [page, setPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [uploadOrderId, setUploadOrderId] = useState<string | null>(null);
@@ -32,12 +33,19 @@ function LabPage() {
   });
 
   const { data: ordersData, isLoading } = useQuery({
-    queryKey: ['lab', 'orders', page, search, statusFilter, priorityFilter],
+    queryKey: ['lab', 'orders', page, search, statusFilter, priorityFilter, dateRange],
     queryFn: () => {
       const params = new URLSearchParams({ page: String(page), limit: '20' });
       if (statusFilter) params.set('status', statusFilter);
       if (priorityFilter) params.set('priority', priorityFilter);
       if (search) params.set('patient_id', search);
+
+      if (dateRange !== 'all') {
+        const fromDate = new Date();
+        fromDate.setDate(fromDate.getDate() - parseInt(dateRange));
+        params.set('fromDate', fromDate.toISOString());
+      }
+
       return coreApi.get<any[]>(`/lab/orders?${params}`);
     },
   });
@@ -195,6 +203,20 @@ function LabPage() {
             <option value="ROUTINE">Routine</option>
             <option value="URGENT">Urgent</option>
             <option value="STAT">Emergency (STAT)</option>
+          </select>
+          <select
+            value={dateRange}
+            onChange={(e) => {
+              setDateRange(e.target.value);
+              setPage(1);
+            }}
+            className="px-4 py-2 bg-white border border-emerald-100 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-100 transition-all appearance-none cursor-pointer shadow-sm shadow-emerald-500/5 font-fira-code min-w-[140px] h-[36px]"
+          >
+            <option value="7">Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="60">Last 60 Days</option>
+            <option value="90">Last 90 Days</option>
+            <option value="all">All Time</option>
           </select>
         </div>
       </div>

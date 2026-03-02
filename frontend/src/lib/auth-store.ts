@@ -6,10 +6,12 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
-  role: string;
+  role: string | { name: string };
   avatar_url?: string;
   tenant_id: string;
   department_id?: string;
+  two_factor_enabled?: boolean;
+  settings?: Record<string, any>;
 }
 
 export interface Tenant {
