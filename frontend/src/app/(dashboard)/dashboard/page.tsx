@@ -21,7 +21,7 @@ import {
 } from 'recharts';
 import { toast } from 'sonner';
 
-const CHART_COLORS = ['#0891B2', '#06B6D4', '#22D3EE', '#7DD3FC'];
+const CHART_COLORS = ['#0891B2', '#0D9488', '#2563EB', '#6366F1'];
 
 interface StatCardProps {
   label: string;
@@ -34,11 +34,11 @@ interface StatCardProps {
 
 function LiquidStatCard({ label, value, change, icon: Icon, trend, color }: StatCardProps) {
   return (
-    <div className="group relative overflow-hidden bg-white/80 backdrop-blur-xl rounded-[32px] border border-cyan-100 p-6 shadow-xl shadow-cyan-500/5 hover:shadow-2xl transition-all hover:-translate-y-1">
+    <div className="group relative overflow-hidden bg-card p-6 rounded-[32px] border border-border shadow-xl shadow-black/5 hover:shadow-2xl transition-all hover:-translate-y-1">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-900/40 mb-1 font-fira-code">{label}</p>
-          <p className="text-3xl font-black text-slate-900 tracking-tighter font-fira-sans">{value}</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 dark:text-primary/40 mb-1 font-fira-code">{label}</p>
+          <p className="text-3xl font-black text-foreground tracking-tighter font-fira-sans">{value}</p>
         </div>
         <div className={cn("p-3 rounded-2xl text-white shadow-lg shadow-current/20", color)}>
           <Icon size={20} />
@@ -49,12 +49,12 @@ function LiquidStatCard({ label, value, change, icon: Icon, trend, color }: Stat
         <div className="flex items-center gap-1.5 mt-2">
           <div className={cn(
             "flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest font-fira-code",
-            trend === 'up' ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+            trend === 'up' ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
           )}>
             {trend === 'up' ? <ArrowUpRight size={10} /> : <ArrowRight size={10} />}
             {change}
           </div>
-          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-fira-sans">vs last period</span>
+          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest font-fira-sans">vs last period</span>
         </div>
       )}
 
@@ -101,7 +101,7 @@ function QuickAttendance() {
   const config = statusConfigs[status];
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-[#164E63] to-[#0891B2] rounded-[48px] p-8 lg:p-10 shadow-2xl shadow-cyan-900/40 text-white min-h-[340px] flex flex-col justify-between group">
+    <div className="relative overflow-hidden bg-gradient-to-br from-primary/95 to-primary rounded-[48px] p-8 lg:p-10 shadow-2xl shadow-primary/40 text-primary-foreground min-h-[340px] flex flex-col justify-between group">
       <div className="relative z-10">
         <div className="flex items-center gap-3 mb-8">
           <div className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-black uppercase tracking-[0.2em]">Staff Status</div>
@@ -120,9 +120,9 @@ function QuickAttendance() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { id: 'AVAILABLE', label: 'Clock In', icon: UserCheck, active: 'bg-white text-cyan-900 shadow-xl shadow-cyan-900/20' },
-            { id: 'ON_BREAK', label: 'Break', icon: Coffee, active: 'bg-white text-cyan-900 shadow-xl shadow-cyan-900/20' },
-            { id: 'OFF_DUTY', label: 'Clock Out', icon: LogOut, active: 'bg-white text-cyan-900 shadow-xl shadow-cyan-900/20' }
+            { id: 'AVAILABLE', label: 'Clock In', icon: UserCheck, active: 'bg-white text-primary shadow-xl shadow-primary/20' },
+            { id: 'ON_BREAK', label: 'Break', icon: Coffee, active: 'bg-white text-primary shadow-xl shadow-primary/20' },
+            { id: 'OFF_DUTY', label: 'Clock Out', icon: LogOut, active: 'bg-white text-primary shadow-xl shadow-primary/20' }
           ].map((btn) => (
             <button
               key={btn.id}
@@ -195,20 +195,20 @@ function DashboardContent() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-md text-[8px] font-black uppercase tracking-widest font-fira-code border border-cyan-200">All Systems Online</div>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">{formatDate(new Date())}</p>
+            <div className="px-2 py-0.5 bg-primary/10 text-primary rounded-md text-[8px] font-black uppercase tracking-widest font-fira-code border border-primary/20">All Systems Online</div>
+            <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">{formatDate(new Date())}</p>
           </div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-tight font-fira-sans">
+          <h1 className="text-4xl font-black text-foreground tracking-tighter leading-tight font-fira-sans">
             Welcome back, <br />
-            <span className="text-cyan-600">{user?.first_name}</span>
+            <span className="text-primary">{user?.first_name}</span>
           </h1>
         </div>
         <div className="flex items-center gap-4">
           <div className="text-right hidden sm:block">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{tenant?.name}</p>
-            <p className="text-xs font-bold text-slate-600">Management Dashboard</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{tenant?.name}</p>
+            <p className="text-xs font-bold text-muted-foreground">Management Dashboard</p>
           </div>
-          <div className="w-12 h-12 bg-white rounded-2xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-cyan-600 hover:border-cyan-200 transition-all cursor-pointer">
+          <div className="w-12 h-12 bg-card rounded-2xl border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/50 transition-all cursor-pointer">
             <Zap size={20} />
           </div>
         </div>
@@ -250,23 +250,24 @@ function DashboardContent() {
             color="bg-emerald-500"
           />
         </div>
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-4 flex flex-col gap-6">
           <QuickAttendance />
+          <InventoryForecastingAlerts />
         </div>
       </div>
 
       {/* Visual Data Layer */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
         {/* Trend Graph */}
-        <div className="xl:col-span-8 bg-white/80 backdrop-blur-xl rounded-[40px] border border-slate-100 p-8 shadow-xl shadow-slate-200/40 outline outline-1 outline-white/50">
+        <div className="xl:col-span-8 bg-card rounded-[40px] border border-border p-8 shadow-xl shadow-black/5 outline outline-1 outline-white/5">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-xl font-black text-slate-900 tracking-tight font-fira-sans mb-1">Weekly Activity</h3>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-fira-code">Number of appointments per day</p>
+              <h3 className="text-xl font-black text-foreground tracking-tight font-fira-sans mb-1">Weekly Activity</h3>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest font-fira-code">Number of appointments per day</p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-cyan-500" />
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Appointments</span>
+              <div className="w-2 h-2 rounded-full bg-primary" />
+              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Total Appointments</span>
             </div>
           </div>
 
@@ -279,7 +280,7 @@ function DashboardContent() {
                     <stop offset="95%" stopColor="#0891B2" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
                 <XAxis
                   dataKey="day"
                   axisLine={false}
@@ -293,7 +294,16 @@ function DashboardContent() {
                   tick={{ fontSize: 10, fontWeight: 700, fill: '#94A3B8' }}
                 />
                 <Tooltip
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }}
+                  contentStyle={{
+                    borderRadius: '16px',
+                    backgroundColor: 'var(--card)',
+                    border: '1px solid var(--border)',
+                    boxShadow: '0 10px 30px -10px rgba(0,0,0,0.3)',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    color: 'var(--foreground)'
+                  }}
+                  itemStyle={{ color: 'var(--primary)' }}
                 />
                 <Area
                   type="monotone"
@@ -309,9 +319,9 @@ function DashboardContent() {
         </div>
 
         {/* Clinical Distribution */}
-        <div className="xl:col-span-4 bg-white/80 backdrop-blur-xl rounded-[40px] border border-slate-100 p-8 shadow-xl shadow-slate-200/40">
-          <h3 className="text-xl font-black text-slate-900 tracking-tight font-fira-sans mb-1">Lab Test Types</h3>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-fira-code mb-8">Distribution of test categories</p>
+        <div className="xl:col-span-4 bg-card rounded-[40px] border border-border p-8 shadow-xl shadow-black/5">
+          <h3 className="text-xl font-black text-foreground tracking-tight font-fira-sans mb-1">Lab Test Types</h3>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest font-fira-code mb-8">Distribution of test categories</p>
 
           <div className="h-[240px] w-full relative">
             <ResponsiveContainer width="100%" height="100%">
@@ -328,12 +338,21 @@ function DashboardContent() {
                     <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} className="outline-none" />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: '16px',
+                    backgroundColor: 'var(--card)',
+                    border: '1px solid var(--border)',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    color: 'var(--foreground)'
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-              <p className="text-2xl font-black text-slate-900 leading-none">100%</p>
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Completed</p>
+              <p className="text-2xl font-black text-foreground leading-none">100%</p>
+              <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Completed</p>
             </div>
           </div>
 
@@ -341,7 +360,7 @@ function DashboardContent() {
             {labDistribution.map((item, i) => (
               <div key={i} className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: CHART_COLORS[i] }} />
-                <span className="text-[9px] font-black text-slate-600 uppercase tracking-tight">{item.name}</span>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-tight">{item.name}</span>
               </div>
             ))}
           </div>
@@ -351,34 +370,34 @@ function DashboardContent() {
       {/* Registry Preview Layer */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
         {/* Appointments List */}
-        <div className="xl:col-span-12 bg-white rounded-[40px] border border-slate-100 p-8 shadow-xl shadow-slate-200/10">
+        <div className="xl:col-span-12 bg-card rounded-[40px] border border-border p-8 shadow-xl shadow-black/5">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-xl font-black text-slate-900 tracking-tight font-fira-sans mb-1">Today's Schedule</h3>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-fira-code">Upcoming appointments for today</p>
+              <h3 className="text-xl font-black text-foreground tracking-tight font-fira-sans mb-1">Today's Schedule</h3>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest font-fira-code">Upcoming appointments for today</p>
             </div>
-            <button className="px-6 py-2 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-cyan-600 transition-colors shadow-lg shadow-slate-900/10">
+            <button className="px-6 py-2 bg-primary text-primary-foreground rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-colors shadow-lg shadow-primary/10">
               View All
             </button>
           </div>
 
           {!todayAppointments?.data?.length ? (
-            <div className="text-center py-20 bg-slate-50/50 rounded-[32px] border-2 border-dashed border-slate-200">
-              <CalendarDays className="h-10 w-10 mx-auto mb-4 text-slate-300" />
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No appointments today</p>
+            <div className="text-center py-20 bg-muted/20 rounded-[32px] border-2 border-dashed border-border">
+              <CalendarDays className="h-10 w-10 mx-auto mb-4 text-muted-foreground/30" />
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">No appointments today</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {todayAppointments.data.slice(0, 6).map((appt: any) => (
-                <div key={appt.id} className="group p-5 bg-white border border-slate-100 rounded-[32px] hover:border-cyan-200 hover:shadow-xl hover:shadow-cyan-500/5 transition-all flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center font-black group-hover:bg-cyan-600 group-hover:text-white transition-all">
+                <div key={appt.id} className="group p-5 bg-card border border-border rounded-[32px] hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                     {appt.patient?.first_name?.[0]}{appt.patient?.last_name?.[0]}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black text-slate-900 truncate tracking-tight">{appt.patient?.first_name} {appt.patient?.last_name}</p>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Dr. {appt.doctor?.last_name} · {appt.type}</p>
+                    <p className="text-sm font-black text-foreground truncate tracking-tight">{appt.patient?.first_name} {appt.patient?.last_name}</p>
+                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-2">Dr. {appt.doctor?.last_name} · {appt.type}</p>
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1.5 text-cyan-600">
+                      <div className="flex items-center gap-1.5 text-primary">
                         <Clock size={12} strokeWidth={3} />
                         <span className="text-[10px] font-black font-fira-code">
                           {new Date(appt.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -386,7 +405,7 @@ function DashboardContent() {
                       </div>
                       <span className={cn(
                         "px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest",
-                        appt.status === 'CONFIRMED' ? "bg-emerald-50 text-emerald-600" : "bg-cyan-50 text-cyan-600"
+                        appt.status === 'CONFIRMED' ? "bg-emerald-500/10 text-emerald-600" : "bg-primary/10 text-primary"
                       )}>
                         {appt.status}
                       </span>
@@ -402,9 +421,38 @@ function DashboardContent() {
   );
 }
 
+function InventoryForecastingAlerts() {
+  const { tenant } = useAuthStore();
+  const { data: forecastData } = useQuery({
+    queryKey: ['inventory', 'forecast', tenant?.id],
+    queryFn: () => coreApi.get<any[]>('/inventory/forecast'),
+  });
+
+  const criticalItems = forecastData?.data?.filter((i: any) => i.status === 'CRITICAL') || [];
+
+  if (criticalItems.length === 0) return null;
+
+  return (
+    <div className="bg-card rounded-[32px] border border-rose-500/20 p-6 shadow-xl shadow-rose-500/5">
+      <div className="flex items-center gap-2 mb-4">
+        <AlertTriangle className="text-rose-500" size={18} />
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/60 dark:text-rose-400/40 font-fira-code">Stock Depletion Alerts</h3>
+      </div>
+      <div className="space-y-3">
+        {criticalItems.slice(0, 3).map((item: any) => (
+          <div key={item.id} className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground font-fira-code">
+            <span>{item.name}</span>
+            <span className="text-rose-600 font-bold">~{item.daysRemaining}d</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-500">
       <ErrorBoundary>
         <Suspense fallback={<SkeletonDashboard />}>
           <DashboardContent />

@@ -2,46 +2,47 @@
 
 import {
     Building2, Pill, Activity, BadgeIndianRupee,
-    Stethoscope, Clock, ShieldCheck, Zap
+    Stethoscope, Clock, ShieldCheck, Zap,
+    BookOpen, Layers, Microscope, LayoutDashboard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const features = [
     {
-        title: 'Ward & Bed Management',
-        description: 'Real-time occupancy tracking, bed transfers, and automated admission workflows.',
+        title: 'Ward & Bed Orchestration',
+        description: 'Real-time occupancy tracking, seamless bed transfers, and automated admission workflows with bed-level billing.',
         icon: Building2,
-        color: 'bg-blue-500',
+        gradient: 'bg-gradient-to-br from-blue-500 to-blue-700',
     },
     {
-        title: 'Hyper-Pharmacy',
-        description: 'AI-assisted inventory, batch tracking, expiry alerts, and seamless billing integration.',
+        title: 'Hyper-Pharmacy POS',
+        description: 'AI-assisted inventory, batch tracking, expiry alerts, and integrated OTC/Prescription sales flow.',
         icon: Pill,
-        color: 'bg-emerald-500',
+        gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-700',
+    },
+    {
+        title: 'Fiscal Ledger Accounting',
+        description: 'Double-entry bookkeeping, automated ledger synthesis, and real-time P&L reporting for absolute fiscal transparency.',
+        icon: BadgeIndianRupee,
+        gradient: 'bg-gradient-to-br from-amber-500 to-amber-700',
+    },
+    {
+        title: 'Specialty EMR Matrices',
+        description: 'High-resolution clinical data for Pediatry, OBG, Cardio, and Oncology with specialty-specific logic.',
+        icon: Stethoscope,
+        gradient: 'bg-gradient-to-br from-rose-500 to-rose-700',
     },
     {
         title: 'Laboratory 360',
-        description: 'Digital ordering, sample collection tracking, and automated result delivery.',
+        description: 'Digital ordering, sample collection tracking, and automated result delivery across hospital nodes.',
         icon: Activity,
-        color: 'bg-purple-500',
-    },
-    {
-        title: 'Precision Billing',
-        description: 'TPA/Insurance support, Itemized charging, and integrated digital payments.',
-        icon: BadgeIndianRupee,
-        color: 'bg-amber-500',
-    },
-    {
-        title: 'Electronic Med Records',
-        description: 'Voice-to-text notes, historical clinical data, and longitudinal patient health views.',
-        icon: Stethoscope,
-        color: 'bg-rose-500',
+        gradient: 'bg-gradient-to-br from-purple-500 to-purple-700',
     },
     {
         title: 'Smart Scheduling',
-        description: 'Patient self-booking, doctor availability calendar, and automated SMS reminders.',
+        description: 'Doctor availability calendars, patient self-booking, and automated reminder protocols.',
         icon: Clock,
-        color: 'bg-indigo-500',
+        gradient: 'bg-gradient-to-br from-indigo-500 to-indigo-700',
     },
 ];
 
@@ -50,7 +51,7 @@ export function LandingFeatures() {
         <section id="features" className="py-16 bg-white font-fira-sans relative overflow-hidden text-slate-900">
             {/* Ambient Depth Elements */}
             <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-50/50 rounded-full blur-[100px] -ml-40" />
-            
+
             <div className="max-w-7xl mx-auto px-10 relative z-10">
                 <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
                     <h2 className="text-[8px] font-black uppercase tracking-[0.3em] text-emerald-600 font-fira-code">Unrivaled Clinical Power</h2>
@@ -62,16 +63,16 @@ export function LandingFeatures() {
                     {features.map((f, i) => (
                         <div
                             key={f.title}
-                            className="group p-5 bg-white/70 backdrop-blur-2xl border border-emerald-100/30 rounded-2xl hover:bg-white transition-all duration-500 hover:-translate-y-1 shadow-lg shadow-emerald-500/5"
+                            className="group p-8 bg-white/70 backdrop-blur-2xl border border-emerald-100/30 rounded-3xl hover:bg-white transition-all duration-500 hover:-translate-y-2 shadow-lg shadow-emerald-500/5"
                         >
                             <div className={cn(
-                                "w-10 h-10 rounded-xl flex items-center justify-center text-white mb-4 shadow-lg transition-all duration-500 group-hover:rotate-6 group-hover:scale-105",
-                                f.color.replace('bg-', 'bg-gradient-to-br from-').replace('500', '600') + " to-" + f.color.replace('bg-', '').replace('500', '800')
+                                "w-12 h-12 rounded-2xl flex items-center justify-center text-white mb-6 shadow-xl transition-all duration-500 group-hover:rotate-6 group-hover:scale-110",
+                                f.gradient
                             )}>
-                                <f.icon size={20} />
+                                <f.icon size={24} strokeWidth={2.5} />
                             </div>
-                            <h3 className="text-lg font-black text-slate-900 mb-1.5 tracking-tight uppercase font-fira-sans">{f.title}</h3>
-                            <p className="text-xs text-slate-500 font-semibold leading-relaxed tracking-tight">{f.description}</p>
+                            <h3 className="text-xl font-black text-slate-900 mb-3 tracking-tight uppercase font-fira-sans leading-tight">{f.title}</h3>
+                            <p className="text-sm text-slate-500 font-medium leading-relaxed tracking-tight">{f.description}</p>
                         </div>
                     ))}
                 </div>
@@ -80,7 +81,7 @@ export function LandingFeatures() {
                 <div className="mt-16 p-6 bg-emerald-950 rounded-2xl relative overflow-hidden shadow-xl shadow-emerald-900/30">
                     <div className="absolute inset-0 bg-gradient-to-tr from-emerald-900 to-transparent opacity-50" />
                     <div className="absolute top-0 right-0 p-8 text-emerald-800/5"><Building2 size={120} /></div>
-                    
+
                     <div className="relative z-10 grid md:grid-cols-4 gap-6 text-center">
                         {[
                             { l: 'Patient Records', v: '2.4M+', sub: 'Verified Data' },

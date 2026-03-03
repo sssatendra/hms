@@ -2,6 +2,7 @@ import { Inter, Fira_Sans, Fira_Code } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/providers';
 import { Toaster } from '@/components/shared/toaster';
+import { GlobalSearch } from '@/components/search/GlobalSearch';
 import { cn } from '@/lib/utils';
 import { Metadata } from 'next';
 
@@ -19,8 +20,8 @@ const firaCode = Fira_Code({
 
 export const metadata: Metadata = {
   title: {
-    default: 'HMS - Hospital Management System',
-    template: '%s | HMS',
+    default: 'MedOrbit - Hospital Management System',
+    template: '%s | MedOrbit',
   },
   description: 'Multi-tenant Hospital Management System with Pharmacy and Laboratory modules',
   icons: {
@@ -38,6 +39,7 @@ export default function RootLayout({
       <body className={cn(inter.variable, firaSans.variable, firaCode.variable, "font-sans")}>
         <Providers>
           {children}
+          <GlobalSearch />
           <Toaster />
         </Providers>
       </body>

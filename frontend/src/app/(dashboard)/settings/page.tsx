@@ -1,6 +1,6 @@
 'use client';
 
-import { User, Shield, Bell, Building, CheckCircle2, Loader2, Edit2, Settings, Lock, Key, Smartphone, Mail, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { User, Shield, Bell, Building, CheckCircle2, Loader2, Edit2, Settings, Lock, Key, Smartphone, Mail, AlertTriangle, Eye, EyeOff, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth-store';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
@@ -212,9 +212,9 @@ export default function SettingsPage() {
                 <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl" />
             </div>
 
-            <div className="bg-white/70 backdrop-blur-xl rounded-[40px] border border-teal-100 shadow-2xl shadow-teal-500/5 overflow-hidden flex flex-col md:flex-row min-h-[650px]">
+            <div className="bg-card rounded-[40px] border border-border shadow-2xl shadow-black/5 overflow-hidden flex flex-col md:flex-row min-h-[650px]">
                 {/* Sidebar */}
-                <div className="w-full md:w-72 border-b md:border-b-0 md:border-r border-teal-50 bg-teal-50/20 p-6">
+                <div className="w-full md:w-72 border-b md:border-b-0 md:border-r border-border bg-muted/20 p-6">
                     <nav className="space-y-2">
                         {tabs.map((tab) => (
                             <button
@@ -223,8 +223,8 @@ export default function SettingsPage() {
                                 className={cn(
                                     'w-full flex items-center gap-4 px-5 py-4 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all duration-300 font-fira-code group',
                                     activeTab === tab.id
-                                        ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20 scale-105'
-                                        : 'text-teal-900/50 hover:text-teal-900 hover:bg-white/50'
+                                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105'
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                                 )}
                             >
                                 <tab.icon className="h-4 w-4" />
@@ -235,32 +235,33 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 p-8 lg:p-12 bg-white/30">
+                <div className="flex-1 p-8 lg:p-12 bg-card/10">
                     {activeTab === 'profile' && (
                         <div className="max-w-2xl space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <div className="flex items-center gap-8 p-6 bg-teal-50/30 rounded-[32px] border border-teal-100/50">
-                                <div className="w-24 h-24 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-[28px] flex items-center justify-center text-white text-3xl font-black border-4 border-white shadow-2xl uppercase">
+                            <div className="flex items-center gap-8 p-6 bg-muted/30 rounded-[32px] border border-border">
+                                <div className="w-24 h-24 bg-gradient-to-br from-primary to-primary/80 rounded-[28px] flex items-center justify-center text-primary-foreground text-3xl font-black border-4 border-background shadow-2xl uppercase">
                                     {user?.first_name?.[0]}{user?.last_name?.[0]}
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black text-teal-900 uppercase">Account Persona</h3>
-                                    <p className="text-[10px] font-black text-teal-600/60 uppercase tracking-widest font-fira-code">{(typeof user?.role === 'string' ? user.role : user?.role?.name || '').replace('_', ' ')}</p>
+                                    <h3 className="text-xl font-black text-foreground uppercase">Account Persona</h3>
+                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest font-fira-code">{(typeof user?.role === 'string' ? user.role : user?.role?.name || '').replace('_', ' ')}</p>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-teal-900/40 uppercase tracking-widest font-fira-code ml-1">First Name</label>
-                                    <input type="text" value={profileForm.first_name} onChange={e => setProfileForm(p => ({ ...p, first_name: e.target.value }))} className="w-full px-5 py-4 bg-white/50 border border-teal-100 rounded-2xl text-[11px] font-black uppercase tracking-wider outline-none focus:ring-4 focus:ring-teal-500/10" />
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest font-fira-code ml-1">First Name</label>
+                                    <input type="text" value={profileForm.first_name} onChange={e => setProfileForm(p => ({ ...p, first_name: e.target.value }))} className="w-full px-5 py-4 bg-background border border-border rounded-2xl text-[11px] font-black uppercase tracking-wider outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-foreground" />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-teal-900/40 uppercase tracking-widest font-fira-code ml-1">Last Name</label>
-                                    <input type="text" value={profileForm.last_name} onChange={e => setProfileForm(p => ({ ...p, last_name: e.target.value }))} className="w-full px-5 py-4 bg-white/50 border border-teal-100 rounded-2xl text-[11px] font-black uppercase tracking-wider outline-none focus:ring-4 focus:ring-teal-500/10" />
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest font-fira-code ml-1">Last Name</label>
+                                    <input type="text" value={profileForm.last_name} onChange={e => setProfileForm(p => ({ ...p, last_name: e.target.value }))} className="w-full px-5 py-4 bg-background border border-border rounded-2xl text-[11px] font-black uppercase tracking-wider outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-foreground" />
                                 </div>
                             </div>
+
                             <button
                                 onClick={() => updateProfileMutation.mutate(profileForm)}
                                 disabled={updateProfileMutation.isPending}
-                                className="px-8 py-4 bg-teal-900 text-white rounded-[24px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-teal-900/20 active:scale-95 font-fira-code flex items-center gap-2 items-center"
+                                className="px-8 py-4 bg-primary text-primary-foreground rounded-[24px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 active:scale-95 font-fira-code flex items-center gap-2"
                             >
                                 {updateProfileMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                                 Update Identification
@@ -271,13 +272,13 @@ export default function SettingsPage() {
                     {activeTab === 'clinic' && (
                         <div className="max-w-2xl space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-teal-900/40 uppercase tracking-widest font-fira-code ml-1">Hospital Designation</label>
-                                <input type="text" value={settingsForm.name} onChange={e => setSettingsForm(p => ({ ...p, name: e.target.value }))} className="w-full px-5 py-4 bg-white/50 border border-teal-100 rounded-2xl text-[11px] font-black uppercase tracking-wider outline-none focus:ring-4 focus:ring-teal-500/10" />
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest font-fira-code ml-1">Hospital Designation</label>
+                                <input type="text" value={settingsForm.name} onChange={e => setSettingsForm(p => ({ ...p, name: e.target.value }))} className="w-full px-5 py-4 bg-background border border-border rounded-2xl text-[11px] font-black uppercase tracking-wider outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-foreground" />
                             </div>
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-teal-900/40 uppercase tracking-widest font-fira-code ml-1">Currency</label>
-                                    <select value={settingsForm.currency} onChange={e => setSettingsForm(p => ({ ...p, currency: e.target.value }))} className="w-full px-5 py-4 bg-white/50 border border-teal-100 rounded-2xl text-[10px] font-black uppercase tracking-widest appearance-none outline-none focus:ring-4 focus:ring-teal-500/10">
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest font-fira-code ml-1">Currency</label>
+                                    <select value={settingsForm.currency} onChange={e => setSettingsForm(p => ({ ...p, currency: e.target.value }))} className="w-full px-5 py-4 bg-background border border-border rounded-2xl text-[10px] font-black uppercase tracking-widest appearance-none outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-foreground">
                                         <option value="USD">USD ($)</option>
                                         <option value="INR">INR (₹)</option>
                                         <option value="GBP">GBP (£)</option>
@@ -285,15 +286,15 @@ export default function SettingsPage() {
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-teal-900/40 uppercase tracking-widest font-fira-code ml-1">Region</label>
-                                    <select value={settingsForm.country} onChange={e => setSettingsForm(p => ({ ...p, country: e.target.value }))} className="w-full px-5 py-4 bg-white/50 border border-teal-100 rounded-2xl text-[10px] font-black uppercase tracking-widest appearance-none outline-none focus:ring-4 focus:ring-teal-500/10">
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest font-fira-code ml-1">Region</label>
+                                    <select value={settingsForm.country} onChange={e => setSettingsForm(p => ({ ...p, country: e.target.value }))} className="w-full px-5 py-4 bg-background border border-border rounded-2xl text-[10px] font-black uppercase tracking-widest appearance-none outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-foreground">
                                         <option value="US">United States</option>
                                         <option value="IN">India</option>
                                         <option value="GB">United Kingdom</option>
                                     </select>
                                 </div>
                             </div>
-                            <button onClick={() => updateSettingsMutation.mutate(settingsForm)} disabled={updateSettingsMutation.isPending} className="px-8 py-4 bg-teal-600 text-white rounded-[24px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center gap-3 disabled:opacity-50 active:scale-95 font-fira-code">
+                            <button onClick={() => updateSettingsMutation.mutate(settingsForm)} disabled={updateSettingsMutation.isPending} className="px-8 py-4 bg-primary text-primary-foreground rounded-[24px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 flex items-center gap-3 disabled:opacity-50 active:scale-95 font-fira-code">
                                 {updateSettingsMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Settings className="h-4 w-4" />}
                                 Sync Configuration
                             </button>
@@ -302,14 +303,14 @@ export default function SettingsPage() {
 
                     {activeTab === 'notifications' && (
                         <div className="max-w-2xl space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <div className="bg-teal-50/30 p-8 rounded-[32px] border border-teal-100/50 shadow-inner">
+                            <div className="bg-muted/10 p-8 rounded-[32px] border border-border shadow-inner">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <div className="w-12 h-12 bg-white rounded-2xl border border-teal-100 flex items-center justify-center text-teal-600 shadow-sm">
+                                    <div className="w-12 h-12 bg-card rounded-2xl border border-border flex items-center justify-center text-primary shadow-sm">
                                         <Mail className="h-6 w-6" />
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-black text-teal-900 uppercase">Email Transmissions</h3>
-                                        <p className="text-[9px] font-black text-teal-600/50 uppercase tracking-widest font-fira-code">Primary Channel: {user?.email}</p>
+                                        <h3 className="text-sm font-black text-foreground uppercase">Email Transmissions</h3>
+                                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest font-fira-code">Primary Channel: {user?.email}</p>
                                     </div>
                                 </div>
                                 <div className="space-y-4">
@@ -318,10 +319,10 @@ export default function SettingsPage() {
                                         { id: 'email_lab_results', label: 'Critical Lab Results', desc: 'Secure alerts for completed diagnostic reports' },
                                         { id: 'email_billing', label: 'Financial Statements', desc: 'Invoices and payment confirmations' },
                                     ].map(item => (
-                                        <div key={item.id} className="flex items-center justify-between p-4 bg-white/60 rounded-2xl border border-white hover:border-teal-100 transition-all group">
+                                        <div key={item.id} className="flex items-center justify-between p-4 bg-background border border-border hover:border-primary/50 transition-all group rounded-2xl">
                                             <div>
-                                                <p className="text-[10px] font-black text-teal-950 uppercase tracking-wider">{item.label}</p>
-                                                <p className="text-[8px] font-black text-teal-600/40 uppercase tracking-widest font-fira-code leading-relaxed">{item.desc}</p>
+                                                <p className="text-[10px] font-black text-foreground uppercase tracking-wider">{item.label}</p>
+                                                <p className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-widest font-fira-code leading-relaxed">{item.desc}</p>
                                             </div>
                                             <button
                                                 onClick={() => setNotificationPrefs(p => ({ ...p, [item.id as any]: !(p as any)[item.id] }))}
@@ -362,7 +363,7 @@ export default function SettingsPage() {
                                 <button
                                     onClick={() => updatePreferencesMutation.mutate(notificationPrefs)}
                                     disabled={updatePreferencesMutation.isPending}
-                                    className="px-8 py-4 bg-teal-900 text-white rounded-[24px] text-[11px] font-black uppercase tracking-widest shadow-xl shadow-teal-900/20 flex items-center gap-3 active:scale-95 font-fira-code"
+                                    className="px-8 py-4 bg-primary text-primary-foreground rounded-[24px] text-[11px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 flex items-center gap-3 active:scale-95 font-fira-code"
                                 >
                                     {updatePreferencesMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
                                     Save Preference Matrix
@@ -373,14 +374,14 @@ export default function SettingsPage() {
 
                     {activeTab === 'security' && (
                         <div className="max-w-2xl space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <div className="bg-rose-50/30 p-8 rounded-[32px] border border-rose-100/50 shadow-inner">
+                            <div className="bg-rose-500/5 p-8 rounded-[32px] border border-rose-500/20 shadow-inner">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <div className="w-12 h-12 bg-white rounded-2xl border border-rose-100 flex items-center justify-center text-rose-600 shadow-sm">
+                                    <div className="w-12 h-12 bg-card rounded-2xl border border-rose-500/20 flex items-center justify-center text-rose-500 shadow-sm">
                                         <Lock className="h-6 w-6" />
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-black text-rose-950 uppercase">Authentication Upgrade</h3>
-                                        <p className="text-[9px] font-black text-rose-600/50 uppercase tracking-widest font-fira-code">Periodic resets are recommended</p>
+                                        <h3 className="text-sm font-black text-foreground uppercase">Authentication Upgrade</h3>
+                                        <p className="text-[9px] font-black text-rose-500/60 uppercase tracking-widest font-fira-code">Periodic resets are recommended</p>
                                     </div>
                                 </div>
                                 <div className="space-y-5">
@@ -390,9 +391,9 @@ export default function SettingsPage() {
                                             placeholder="Current Access Credential"
                                             value={securityForm.current_password}
                                             onChange={e => setSecurityForm(p => ({ ...p, current_password: e.target.value }))}
-                                            className="w-full px-5 py-4 bg-white/70 border border-rose-100 rounded-2xl text-[11px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-300 transition-all font-fira-code"
+                                            className="w-full px-5 py-4 bg-background border border-border rounded-2xl text-[11px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-300 transition-all font-fira-code text-foreground"
                                         />
-                                        <Lock className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-200" />
+                                        <Lock className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500/30" />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="relative group">
@@ -401,9 +402,9 @@ export default function SettingsPage() {
                                                 placeholder="New Security Key"
                                                 value={securityForm.new_password}
                                                 onChange={e => setSecurityForm(p => ({ ...p, new_password: e.target.value }))}
-                                                className="w-full px-5 py-4 bg-white/70 border border-rose-100 rounded-2xl text-[11px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-300 transition-all font-fira-code"
+                                                className="w-full px-5 py-4 bg-background border border-border rounded-2xl text-[11px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-300 transition-all font-fira-code text-foreground"
                                             />
-                                            <Key className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-200" />
+                                            <Key className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500/30" />
                                         </div>
                                         <div className="relative group">
                                             <input
@@ -411,9 +412,9 @@ export default function SettingsPage() {
                                                 placeholder="Confirm New Key"
                                                 value={securityForm.confirm_password}
                                                 onChange={e => setSecurityForm(p => ({ ...p, confirm_password: e.target.value }))}
-                                                className="w-full px-5 py-4 bg-white/70 border border-rose-100 rounded-2xl text-[11px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-300 transition-all font-fira-code"
+                                                className="w-full px-5 py-4 bg-background border border-border rounded-2xl text-[11px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-300 transition-all font-fira-code text-foreground"
                                             />
-                                            <button onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-1/2 -translate-y-1/2 text-rose-300 hover:text-rose-500 transition-colors">
+                                            <button onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-1/2 -translate-y-1/2 text-rose-500/40 hover:text-rose-500 transition-colors">
                                                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                             </button>
                                         </div>

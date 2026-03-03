@@ -113,4 +113,20 @@ router.get('/stats', authorize('inventory:read'), async (req: any, res) => {
     }
 });
 
+/**
+ * GET /api/v1/inventory/forecast
+ * Forecasts stock depletion based on consumption.
+ */
+router.get('/forecast', async (req: Request, res: Response) => {
+    try {
+        const tenantId = req.tenantId!;
+        const service = new InventoryService();
+        const forecast = await service.getStockForecasting(tenantId);
+        sendSuccess(res, forecast);
+    } catch (error) {
+        logger.error('Inventory forecast error', { error });
+        sendError(res, ErrorCodes.INTERNAL_ERROR, 'Failed to fetch forecastData', 500);
+    }
+});
+
 export default router;

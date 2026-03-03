@@ -138,15 +138,26 @@ router.post('/sale', authorize('pharmacy:write'), async (req: Request, res: Resp
       const invService = new InventoryService(tx);
       const accService = new AccountingService(tx);
 
-      const warehouse = await tx.warehouse.findFirst({ where: { tenant_id: tenantId, code: 'PH01' } });
-      if (!warehouse) throw new Error('Pharmacy warehouse not found');
+      let warehouse = await tx.warehouse.findFirst({ where: { tenant_id: tenantId, code: 'PH01' } });
+      if (!warehouse) {
+        warehouse = await tx.warehouse.create({
+          data: {
+            tenant_id: tenantId,
+            name: 'Main Pharmacy',
+            code: 'PH01',
+            type: 'PHARMACY',
+            is_active: true
+          }
+        });
+      }
 
       let totalSaleAmount = 0;
       const saleItems = [];
 
       for (const sItem of data.items) {
-        const item = await tx.inventoryItem.findFirst({ where: { tenant_id: tenantId, sku: sItem.sku } });
-        if (!item) throw new Error(`Item ${sItem.sku} not found`);
+        // Find item by ID instead of SKU (Frontend sends item.id as inventory_item_id)
+        const item = await tx.inventoryItem.findFirst({ where: { tenant_id: tenantId, id: sItem.inventory_item_id } });
+        if (!item) throw new Error(`Item ${sItem.inventory_item_id} not found`);
 
         // Deduct stock using FIFO
         await invService.deductStockFIFO(tenantId, warehouse.id, item.id, sItem.quantity, {
@@ -154,8 +165,11 @@ router.post('/sale', authorize('pharmacy:write'), async (req: Request, res: Resp
           referenceType: 'SALE'
         });
 
-        // Get average selling price for the sale (for simplicity, using master or latest)
-        const stock = await tx.inventoryStock.findFirst({ where: { item_id: item.id, warehouse_id: warehouse.id, quantity: { gt: 0 } } });
+        // Get selling price (from the latest batch with stock)
+        const stock = await tx.inventoryStock.findFirst({
+          where: { item_id: item.id, warehouse_id: warehouse.id, quantity: { gt: 0 } },
+          orderBy: { expiry_date: 'asc' }
+        });
         const price = Number(stock?.selling_price || 0);
         totalSaleAmount += price * sItem.quantity;
 
@@ -170,15 +184,22 @@ router.post('/sale', authorize('pharmacy:write'), async (req: Request, res: Resp
       // Create Invoice
       const invoice = await tx.invoice.create({
         data: {
-          tenant_id: tenantId,
-          patient_id: data.patient_id,
+          tenant: { connect: { id: tenantId } },
+          ...(data.patient_id ? { patient: { connect: { id: data.patient_id } } } : {}),
           invoice_number: `SALE-${Date.now()}`,
           subtotal: new Decimal(totalSaleAmount),
           total: new Decimal(totalSaleAmount),
           balance_due: new Decimal(0),
           status: 'PAID',
           created_by: req.user!.userId,
-          items: { create: saleItems.map(i => ({ ...i, unit_price: new Decimal(i.unit_price), total: new Decimal(i.total), category: 'pharmacy' })) }
+          items: {
+            create: saleItems.map(i => ({
+              ...i,
+              unit_price: new Decimal(i.unit_price),
+              total: new Decimal(i.total),
+              category: 'pharmacy'
+            }))
+          }
         }
       });
 

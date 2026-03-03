@@ -72,9 +72,9 @@ export default function UserFormModal({ user, onClose }: UserFormModalProps) {
     });
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-in fade-in duration-200">
             <div className="bg-card w-full max-w-lg rounded-2xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-200">
-                <div className="p-6 border-b border-border bg-muted/20 flex justify-between items-center">
+                <div className="p-6 border-b border-border bg-muted/20 flex justify-between items-center text-foreground">
                     <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                             {isEditing ? <BadgeInfo size={20} /> : <UserPlus size={20} />}
@@ -161,7 +161,7 @@ export default function UserFormModal({ user, onClose }: UserFormModalProps) {
                             </label>
                             <input
                                 {...register('specialization')}
-                                className="w-full h-10 px-4 bg-primary/5 border border-primary/20 rounded-xl text-xs font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-slate-400"
+                                className="w-full h-10 px-4 bg-primary/5 border border-primary/20 rounded-xl text-xs font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/30 text-foreground"
                                 placeholder="Ex: Orthopedics, Pediatrics, Cardiology"
                             />
                         </div>

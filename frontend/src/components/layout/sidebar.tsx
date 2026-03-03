@@ -61,7 +61,7 @@ export function Sidebar() {
           </div>
           <div className="min-w-0">
             <h1 className="font-bold text-foreground text-sm truncate">
-              {tenant?.name || 'HMS Portal'}
+              {tenant?.name || 'MedOrbit Portal'}
             </h1>
             <p className="text-xs text-muted-foreground truncate">{tenant?.slug}</p>
           </div>

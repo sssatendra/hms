@@ -16,19 +16,19 @@ import { useCurrency } from '@/hooks/use-currency';
 
 function OceanStatCard({ label, value, icon: Icon, color }: { label: string, value: string | number, icon: any, color: string }) {
     return (
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-cyan-100 p-4 shadow-lg shadow-cyan-500/5 hover:shadow-xl transition-all">
+        <div className="bg-card/80 backdrop-blur-xl rounded-2xl border border-border p-4 shadow-lg shadow-primary/5 hover:shadow-xl transition-all">
             <div className="flex items-start justify-between mb-3">
                 <div>
-                    <p className="text-[7.5px] font-black uppercase tracking-[0.2em] text-cyan-900/40 mb-1 font-fira-code">{label}</p>
-                    <p className="text-xl font-black text-slate-900 tracking-tighter font-fira-sans uppercase">{value}</p>
+                    <p className="text-[7.5px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1 font-fira-code">{label}</p>
+                    <p className="text-xl font-black text-foreground tracking-tighter font-fira-sans uppercase">{value}</p>
                 </div>
                 <div className={cn("p-2 rounded-xl text-white shadow-md", color)}>
                     <Icon size={16} />
                 </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-slate-50 flex items-center gap-2">
+            <div className="mt-3 pt-3 border-t border-border flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest font-fira-code">Sync Stable</span>
+                <span className="text-[7px] font-black text-muted-foreground uppercase tracking-widest font-fira-code">Sync Stable</span>
             </div>
         </div>
     );
@@ -125,7 +125,7 @@ function PatientRecordsPage() {
             </div>
 
             {/* Quick Stats Grid (High Density) */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 font-fira-sans">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 font-fira-sans relative z-10">
                 <OceanStatCard label="Admissions" value={patient.admissions?.length || 0} icon={Stethoscope} color="bg-cyan-600" />
                 <OceanStatCard label="Notes" value={patient.progress_notes?.length || 0} icon={FileText} color="bg-indigo-600" />
                 <OceanStatCard label="Total Invoiced" value={formatCurrency(totalInvoiced)} icon={BadgeIndianRupee} color="bg-emerald-600" />
@@ -135,14 +135,14 @@ function PatientRecordsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Main Content: Timeline */}
                 <div className="lg:col-span-8 space-y-6">
-                    <section className="bg-white/70 backdrop-blur-xl rounded-[32px] border border-cyan-100 p-8 shadow-xl shadow-cyan-500/5">
+                    <section className="bg-card/70 backdrop-blur-xl rounded-[32px] border border-border p-8 shadow-xl shadow-primary/5">
                         <div className="flex items-center justify-between mb-8">
                             <div>
-                                <h3 className="text-xl font-black flex items-center gap-3 tracking-tight font-fira-sans uppercase">
-                                    <Activity className="h-5 w-5 text-cyan-500 animate-pulse" />
+                                <h3 className="text-xl font-black flex items-center gap-3 tracking-tight font-fira-sans uppercase text-foreground">
+                                    <Activity className="h-5 w-5 text-primary animate-pulse" />
                                     Clinical History Timeline
                                 </h3>
-                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-0.5 font-fira-code">Chronological Patient Record</p>
+                                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mt-0.5 font-fira-code">Chronological Patient Record</p>
                             </div>
                             <div className="flex items-center gap-4">
                                 <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-2 font-fira-code">
@@ -187,15 +187,15 @@ function PatientRecordsPage() {
                                         return (
                                             <div key={adm.id} className="relative pl-16 group">
                                                 <div className="absolute left-4 top-2 w-3 h-3 rounded-full bg-white border-[3px] border-cyan-500 shadow-sm z-10" />
-                                                <div className="p-6 bg-white/50 backdrop-blur-sm rounded-3xl border border-cyan-100/50 hover:border-cyan-300 transition-all duration-500">
+                                                <div className="p-6 bg-card/50 backdrop-blur-sm rounded-3xl border border-border/50 hover:border-primary/30 transition-all duration-500">
                                                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
                                                         <div>
-                                                            <p className="text-[8px] font-black text-cyan-600 uppercase tracking-widest mb-1 font-fira-code">{format(new Date(adm.admitted_at), 'MMMM dd, yyyy')}</p>
-                                                            <h4 className="font-black text-lg tracking-tight text-slate-900 font-fira-sans uppercase">Medical Stay: <span className="text-cyan-600/60">{adm.bed.ward.name}</span></h4>
+                                                            <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-1 font-fira-code">{format(new Date(adm.admitted_at), 'MMMM dd, yyyy')}</p>
+                                                            <h4 className="font-black text-lg tracking-tight text-foreground font-fira-sans uppercase">Medical Stay: <span className="text-primary/60">{adm.bed.ward.name}</span></h4>
                                                         </div>
                                                         <span className={cn(
                                                             "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm self-start font-fira-code",
-                                                            adm.discharged_at ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-cyan-50 text-cyan-600 border-cyan-100"
+                                                            adm.discharged_at ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-primary/10 text-primary border-primary/20"
                                                         )}>
                                                             {adm.discharged_at ? 'Stay Completed' : 'Currently Admitted'}
                                                         </span>
@@ -207,12 +207,12 @@ function PatientRecordsPage() {
                                                             { label: 'Stay Status', value: adm.discharged_at ? 'Discharged' : 'Active Stay', icon: Zap },
                                                             { label: 'Bed Number', value: adm.bed.bed_number, icon: Box },
                                                         ].map((item, idx) => (
-                                                            <div key={idx} className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 group-hover:bg-cyan-50/50 transition-colors">
-                                                                <p className="text-[9px] uppercase font-black text-slate-400 mb-1 font-fira-code flex items-center gap-2">
-                                                                    <item.icon size={12} className="text-cyan-500/40" />
+                                                            <div key={idx} className="p-4 bg-muted/30 rounded-2xl border border-border group-hover:bg-primary/5 transition-colors">
+                                                                <p className="text-[9px] uppercase font-black text-muted-foreground mb-1 font-fira-code flex items-center gap-2">
+                                                                    <item.icon size={12} className="text-primary/40" />
                                                                     {item.label}
                                                                 </p>
-                                                                <p className="text-sm font-black text-slate-700 tracking-tight font-fira-sans uppercase">{item.value}</p>
+                                                                <p className="text-sm font-black text-foreground tracking-tight font-fira-sans uppercase">{item.value}</p>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -243,15 +243,15 @@ function PatientRecordsPage() {
                                         return (
                                             <div key={order.id} className="relative pl-16 group">
                                                 <div className="absolute left-4 top-2 w-3 h-3 rounded-full bg-white border-[3px] border-emerald-500 shadow-sm z-10" />
-                                                <div className="p-6 bg-white/50 backdrop-blur-sm rounded-3xl border border-emerald-100/50 hover:border-emerald-300 transition-all duration-500">
+                                                <div className="p-6 bg-card/50 backdrop-blur-sm rounded-3xl border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-500">
                                                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
                                                         <div>
-                                                            <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mb-1 font-fira-code">{format(new Date(order.created_at), 'MMMM dd, yyyy')}</p>
-                                                            <h4 className="font-black text-lg tracking-tight text-slate-900 font-fira-sans uppercase">Investigation: <span className="text-emerald-600/60">{order.items?.[0]?.lab_test?.name || 'Diagnostic Panel'}</span></h4>
+                                                            <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mb-1 font-fira-code">{format(new Date(order.created_at), 'MMMM dd, yyyy')}</p>
+                                                            <h4 className="font-black text-lg tracking-tight text-foreground font-fira-sans uppercase">Investigation: <span className="text-emerald-500/60">{order.items?.[0]?.lab_test?.name || 'Diagnostic Panel'}</span></h4>
                                                         </div>
                                                         <span className={cn(
                                                             "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm self-start font-fira-code",
-                                                            order.status === 'COMPLETED' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-600 border-amber-100"
+                                                            order.status === 'COMPLETED' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
                                                         )}>
                                                             {order.status === 'COMPLETED' ? 'Report Authenticated' : order.status.replace('_', ' ')}
                                                         </span>
@@ -259,16 +259,16 @@ function PatientRecordsPage() {
 
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                         {order.items?.map((item: any) => (
-                                                            <div key={item.id} className="p-5 bg-white border border-slate-100 rounded-2xl group-hover:border-emerald-200 transition-colors">
+                                                            <div key={item.id} className="p-5 bg-muted/20 border border-border rounded-2xl group-hover:border-emerald-500/30 transition-colors">
                                                                 <div className="flex justify-between items-start mb-4">
                                                                     <div>
-                                                                        <span className="text-[8px] font-black px-1.5 py-0.5 bg-emerald-50 text-emerald-600 rounded-md border border-emerald-100 uppercase tracking-tighter mb-1 inline-block font-fira-code">
+                                                                        <span className="text-[8px] font-black px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 rounded-md border border-emerald-500/20 uppercase tracking-tighter mb-1 inline-block font-fira-code">
                                                                             {item.lab_test?.code}
                                                                         </span>
-                                                                        <h5 className="text-xs font-black uppercase tracking-tight text-slate-800">{item.lab_test?.name}</h5>
+                                                                        <h5 className="text-xs font-black uppercase tracking-tight text-foreground">{item.lab_test?.name}</h5>
                                                                     </div>
                                                                     {order.status === 'COMPLETED' && (
-                                                                        <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
+                                                                        <div className="p-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg">
                                                                             <Shield size={12} />
                                                                         </div>
                                                                     )}
@@ -336,24 +336,24 @@ function PatientRecordsPage() {
 
                 {/* Sidebar: Financials & Integrity */}
                 <div className="lg:col-span-4 space-y-6">
-                    <section className="bg-white/80 backdrop-blur-xl rounded-[32px] border border-cyan-100 p-6 shadow-xl shadow-cyan-500/5">
+                    <section className="bg-card/80 backdrop-blur-xl rounded-[32px] border border-border p-6 shadow-xl shadow-primary/5">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-black flex items-center gap-3 font-fira-sans uppercase tracking-tight">
+                            <h3 className="text-lg font-black flex items-center gap-3 font-fira-sans uppercase tracking-tight text-foreground">
                                 <BadgeIndianRupee className="h-5 w-5 text-emerald-500" />
                                 Billing History
                             </h3>
-                            <span className="text-[7.5px] font-black text-emerald-500 uppercase tracking-widest font-fira-code px-2 py-0.5 bg-emerald-50 rounded-md">Verified</span>
+                            <span className="text-[7.5px] font-black text-emerald-500 uppercase tracking-widest font-fira-code px-2 py-0.5 bg-emerald-500/10 rounded-md">Verified</span>
                         </div>
 
                         <div className="space-y-4">
                             {patient.invoices?.slice(0, 5).map((inv: any) => (
-                                <div key={inv.id} className="flex items-center justify-between p-5 bg-slate-50/70 rounded-3xl border border-slate-100 group hover:border-cyan-300 hover:shadow-lg transition-all">
+                                <div key={inv.id} className="flex items-center justify-between p-5 bg-muted/50 rounded-3xl border border-border group hover:border-primary/50 hover:shadow-lg transition-all">
                                     <div>
-                                        <p className="text-[10px] font-black text-cyan-600 uppercase tracking-widest font-fira-code mb-1">{inv.invoice_number}</p>
-                                        <p className="text-[11px] text-slate-400 font-black font-fira-sans">{format(new Date(inv.created_at), 'MMM dd, yyyy')}</p>
+                                        <p className="text-[10px] font-black text-primary uppercase tracking-widest font-fira-code mb-1">{inv.invoice_number}</p>
+                                        <p className="text-[11px] text-muted-foreground font-black font-fira-sans">{format(new Date(inv.created_at), 'MMM dd, yyyy')}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-black text-lg text-slate-900 tracking-tighter">{formatCurrency(inv.total)}</p>
+                                        <p className="font-black text-lg text-foreground tracking-tighter">{formatCurrency(inv.total)}</p>
                                         <span className={cn(
                                             "text-[9px] font-black uppercase tracking-widest font-fira-code",
                                             inv.status === 'PAID' ? "text-emerald-500" : "text-amber-500"
@@ -361,10 +361,10 @@ function PatientRecordsPage() {
                                     </div>
                                 </div>
                             ))}
-                            {patient.invoices?.length === 0 && <p className="text-center py-12 text-[10px] font-black text-slate-300 uppercase tracking-widest font-fira-code italic">No Invoices Found</p>}
+                            {patient.invoices?.length === 0 && <p className="text-center py-12 text-[10px] font-black text-muted-foreground/30 uppercase tracking-widest font-fira-code italic">No Invoices Found</p>}
                         </div>
 
-                        <button className="w-full mt-6 py-4 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-[0.2em] text-[9px] font-fira-code hover:bg-cyan-600 transition-all flex items-center justify-center gap-2 group shadow-xl shadow-slate-900/10">
+                        <button className="w-full mt-6 py-4 bg-primary text-primary-foreground rounded-3xl font-black uppercase tracking-[0.2em] text-[9px] font-fira-code hover:opacity-90 transition-all flex items-center justify-center gap-2 group shadow-xl shadow-primary/20">
                             View All Invoices
                             <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                         </button>

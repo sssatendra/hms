@@ -111,7 +111,7 @@ export default function WardsPage() {
     }
 
     return (
-        <div className="p-4 lg:p-5 space-y-5 max-w-[1700px] mx-auto min-h-screen bg-cyan-50/50 animate-in fade-in duration-700 font-fira-sans">
+        <div className="p-4 lg:p-5 space-y-5 max-w-[1700px] mx-auto min-h-screen bg-muted/5 animate-in fade-in duration-700 font-fira-sans">
             {/* Ambient Background Elements */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
                 <div className="absolute top-[5%] left-[10%] w-[45%] h-[45%] bg-primary/5 rounded-full blur-[140px] animate-pulse"></div>
@@ -119,27 +119,27 @@ export default function WardsPage() {
             </div>
 
             {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-2">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-2 text-foreground">
                 <div>
-                    <h1 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tighter flex items-center gap-2.5">
-                        <HeartPulse className="h-8 w-8 text-emerald-600" />
+                    <h1 className="text-xl lg:text-2xl font-black text-foreground tracking-tighter flex items-center gap-2.5">
+                        <HeartPulse className="h-8 w-8 text-primary" />
                         Inpatient Services
                     </h1>
-                    <p className="text-slate-400 mt-1 font-black uppercase tracking-[0.2em] text-[8.5px] font-fira-code">Manage wards, beds, and patient admissions</p>
+                    <p className="text-muted-foreground mt-1 font-black uppercase tracking-[0.2em] text-[8.5px] font-fira-code">Manage wards, beds, and patient admissions</p>
                 </div>
                 <div className="flex gap-3">
                     <button
                         onClick={() => setShowCreateWardModal(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-white border border-emerald-100 rounded-xl hover:bg-emerald-50 transition-all font-black text-[8.5px] uppercase tracking-widest text-slate-600 shadow-md shadow-emerald-500/5 active:scale-95 cursor-pointer font-fira-code"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-card/50 backdrop-blur-md border border-border rounded-xl hover:bg-muted transition-all font-black text-[8.5px] uppercase tracking-widest text-muted-foreground shadow-md shadow-black/5 active:scale-95 cursor-pointer font-fira-code group"
                     >
-                        <Building2 className="h-3.5 w-3.5 text-emerald-600" />
+                        <Building2 className="h-3.5 w-3.5 text-primary group-hover:scale-110 transition-transform" />
                         New Ward
                     </button>
                     <button
                         onClick={() => setShowAdmitModal(true)}
-                        className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl hover:opacity-95 transition-all font-black shadow-lg shadow-emerald-500/30 text-[9px] uppercase tracking-[0.2em] active:scale-95 cursor-pointer font-fira-code group"
+                        className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl hover:opacity-95 transition-all font-black shadow-lg shadow-black/10 text-[9px] uppercase tracking-[0.2em] active:scale-95 cursor-pointer font-fira-code group"
                     >
-                        <Plus className="h-4 w-4" />
+                        <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
                         Admit Patient
                     </button>
                 </div>
@@ -152,7 +152,7 @@ export default function WardsPage() {
                     const occupancyRate = (occupiedCount / ward.beds.length) * 100 || 0;
 
                     return (
-                        <div key={ward.id} className="group relative bg-white/60 backdrop-blur-xl rounded-2xl border border-emerald-100 shadow-lg shadow-emerald-500/5 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 flex flex-col min-h-[280px]">
+                        <div key={ward.id} className="group relative bg-card backdrop-blur-xl rounded-2xl border border-border shadow-lg shadow-black/5 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 flex flex-col min-h-[280px]">
                             {/* Medical Status Bar */}
                             <div className={cn(
                                 "h-1 w-full",
@@ -161,14 +161,14 @@ export default function WardsPage() {
 
                             <div className="p-4 flex-1 flex flex-col">
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className="flex gap-2.5">
-                                        <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
+                                    <div className="flex gap-2.5 text-foreground">
+                                        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
                                             <Building2 className="h-4.5 w-4.5" />
                                         </div>
                                         <div>
-                                            <h3 className="text-sm font-black tracking-tighter text-slate-900 mb-0.5 font-fira-sans uppercase">{ward.name}</h3>
+                                            <h3 className="text-sm font-black tracking-tighter text-foreground mb-0.5 font-fira-sans uppercase">{ward.name}</h3>
                                             <div className="flex gap-1 items-center">
-                                                <span className="px-1.5 py-0.5 bg-emerald-100/50 text-[7px] font-black uppercase tracking-[0.1em] rounded-[4px] text-emerald-700 font-fira-code">{ward.type}</span>
+                                                <span className="px-1.5 py-0.5 bg-primary/10 text-[7px] font-black uppercase tracking-[0.1em] rounded-[4px] text-primary font-fira-code">{ward.type}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -189,10 +189,10 @@ export default function WardsPage() {
                                 </div>
 
                                 {/* Bed Occupancy Matrix */}
-                                <div className="flex-1 bg-slate-50/50 rounded-2xl p-3 border border-emerald-50 mb-3 group-hover:bg-white/80 transition-colors flex flex-col min-h-[140px]">
+                                <div className="flex-1 bg-muted/30 rounded-2xl p-3 border border-border mb-3 group-hover:bg-card/80 transition-colors flex flex-col min-h-[140px]">
                                     <div className="flex items-center justify-between mb-2 px-1">
-                                        <h4 className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] font-fira-code">Beds</h4>
-                                        <span className="text-[8px] font-bold text-emerald-600/50 uppercase tracking-widest font-fira-code">{ward.beds.length} Total</span>
+                                        <h4 className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] font-fira-code">Beds</h4>
+                                        <span className="text-[8px] font-bold text-primary/50 uppercase tracking-widest font-fira-code">{ward.beds.length} Total</span>
                                     </div>
                                     <div className="grid grid-cols-[repeat(auto-fill,minmax(50px,1fr))] gap-1.5 overflow-y-auto pr-1 custom-scrollbar max-h-[150px] content-start">
                                         {ward.beds.map((bed: any) => (
@@ -206,10 +206,10 @@ export default function WardsPage() {
                                                 className={cn(
                                                     "relative group/bed h-10 rounded-lg border flex flex-col items-center justify-center transition-all cursor-pointer overflow-hidden active:scale-95",
                                                     bed.status === 'AVAILABLE'
-                                                        ? "bg-white border-emerald-50 hover:border-emerald-300 hover:shadow-md"
+                                                        ? "bg-card border-border hover:border-primary/40 hover:bg-primary/5 hover:shadow-md"
                                                         : bed.status === 'OCCUPIED'
-                                                            ? "bg-rose-50 border-rose-100 text-rose-600 shadow-sm"
-                                                            : "bg-slate-50 border-slate-100 text-slate-400 opacity-60"
+                                                            ? "bg-rose-500/10 border-rose-500/20 text-rose-500 shadow-sm"
+                                                            : "bg-muted border-border text-muted-foreground opacity-60"
                                                 )}
                                             >
                                                 <span className="text-[9px] font-black tracking-tighter leading-none mb-0.5">{bed.bed_number}</span>
@@ -233,21 +233,21 @@ export default function WardsPage() {
 
                                 <div className="flex justify-between items-end">
                                     <div className="flex flex-col">
-                                        <span className="text-[9px] font-black text-slate-700 leading-none uppercase tracking-[0.1em] mb-1.5 font-fira-code">{occupiedCount} / {ward.beds.length} BEDS OCCUPIED</span>
-                                        <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden border border-emerald-50">
+                                        <span className="text-[9px] font-black text-muted-foreground leading-none uppercase tracking-[0.1em] mb-1.5 font-fira-code">{occupiedCount} / {ward.beds.length} BEDS OCCUPIED</span>
+                                        <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden border border-border">
                                             <div
                                                 className={cn(
                                                     "h-full rounded-full transition-all duration-1000",
-                                                    occupancyRate > 90 ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" : "bg-emerald-600"
+                                                    occupancyRate > 90 ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" : "bg-primary"
                                                 )}
                                                 style={{ width: `${occupancyRate}%` }}
                                             />
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-base font-black text-slate-900 leading-none mb-0.5">
+                                        <p className="text-base font-black text-foreground leading-none mb-0.5">
                                             {currencyFormat(ward.daily_rate)}
-                                            <span className="text-[8px] text-slate-400 ml-1 font-black uppercase tracking-widest font-fira-code">/ Day</span>
+                                            <span className="text-[8px] text-muted-foreground ml-1 font-black uppercase tracking-widest font-fira-code">/ Day</span>
                                         </p>
                                         <span className={cn(
                                             "text-[8px] font-black uppercase tracking-widest font-fira-code",
@@ -359,14 +359,16 @@ function AdmitModal({ onClose, patients, wards }: any) {
     const availableBeds = selectedWard?.beds.filter((b: any) => b.status === 'AVAILABLE') || [];
 
     return (
-        <div className="fixed inset-0 bg-primary/20 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-            <div className="bg-white/90 backdrop-blur-2xl w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden border border-emerald-100 animate-in zoom-in-95 duration-300">
-                <div className="p-5 border-b border-emerald-50 bg-emerald-50/30 flex justify-between items-center font-fira-sans">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+            <div className="bg-card w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden border border-border animate-in zoom-in-95 duration-300 relative">
+                {/* Decorative Overlay */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+                <div className="p-5 border-b border-border bg-muted/30 flex justify-between items-center font-fira-sans">
                     <div>
-                        <h2 className="text-lg font-black tracking-tighter text-slate-900 uppercase">Admit Patient</h2>
-                        <p className="text-[8px] text-emerald-600 font-black uppercase tracking-widest mt-0.5 font-fira-code">Select a ward and bed for the patient</p>
+                        <h2 className="text-lg font-black tracking-tighter text-foreground uppercase">Admit Patient</h2>
+                        <p className="text-[8px] text-primary font-black uppercase tracking-widest mt-0.5 font-fira-code">Select a ward and bed for the patient</p>
                     </div>
-                    <button onClick={onClose} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-emerald-50 transition-all text-xs border border-emerald-100 shadow-sm active:scale-95 cursor-pointer">×</button>
+                    <button onClick={onClose} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-muted transition-all text-xs border border-border shadow-sm active:scale-95 cursor-pointer text-foreground">×</button>
                 </div>
                 <form onSubmit={handleSubmit((data) => admitMutation.mutate(data))} className="p-6 space-y-5 font-fira-sans">
                     <div className="space-y-4">
@@ -390,12 +392,12 @@ function AdmitModal({ onClose, patients, wards }: any) {
                                 <select
                                     value={selectedWardId}
                                     onChange={(e) => setSelectedWardId(e.target.value)}
-                                    className="w-full h-12 px-4 bg-muted/20 border border-border rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/10 transition-all outline-none"
+                                    className="w-full h-12 px-4 bg-muted/20 border border-border rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/10 transition-all outline-none text-foreground dark:bg-slate-950"
                                     required
                                 >
-                                    <option value="">Select Ward...</option>
+                                    <option value="" className="bg-card dark:bg-slate-900 text-foreground dark:text-slate-100">Select Ward...</option>
                                     {wards?.map((w: any) => (
-                                        <option key={w.id} value={w.id}>{w.name} ({currencyFormat(w.daily_rate)})</option>
+                                        <option key={w.id} value={w.id} className="bg-card dark:bg-slate-900 text-foreground dark:text-slate-100">{w.name} ({currencyFormat(w.daily_rate)})</option>
                                     ))}
                                 </select>
                             </div>
@@ -403,13 +405,13 @@ function AdmitModal({ onClose, patients, wards }: any) {
                                 <label className="block text-[10px] font-black text-primary uppercase tracking-widest mb-2 ml-1">Select Bed</label>
                                 <select
                                     {...register('bed_id')}
-                                    className="w-full h-12 px-4 bg-muted/20 border border-border rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/10 transition-all outline-none"
+                                    className="w-full h-12 px-4 bg-muted/20 border border-border rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/10 transition-all outline-none text-foreground dark:bg-slate-950"
                                     required
                                     disabled={!selectedWardId}
                                 >
-                                    <option value="">Select Bed...</option>
+                                    <option value="" className="bg-card dark:bg-slate-900 text-foreground dark:text-slate-100">Select Bed...</option>
                                     {availableBeds.map((b: any) => (
-                                        <option key={b.id} value={b.id}>{b.bed_number} • {b.bed_type}</option>
+                                        <option key={b.id} value={b.id} className="bg-card dark:bg-slate-900 text-foreground dark:text-slate-100">{b.bed_number} • {b.bed_type}</option>
                                     ))}
                                 </select>
                             </div>
@@ -445,14 +447,14 @@ function AdmitModal({ onClose, patients, wards }: any) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 h-12 border border-emerald-100 rounded-xl hover:bg-emerald-50 transition-all text-[10px] font-black uppercase tracking-widest active:scale-95 font-fira-code text-slate-500"
+                            className="flex-1 h-12 border border-border rounded-xl hover:bg-muted transition-all text-[10px] font-black uppercase tracking-widest active:scale-95 font-fira-code text-muted-foreground"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={admitMutation.isPending}
-                            className="flex-1 h-12 bg-emerald-900 text-white rounded-xl hover:opacity-95 transition-all text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-900/20 disabled:opacity-50 active:scale-95 font-fira-code"
+                            className="flex-1 h-12 bg-primary text-primary-foreground rounded-xl hover:opacity-95 transition-all text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 disabled:opacity-50 active:scale-95 font-fira-code"
                         >
                             {admitMutation.isPending ? 'SAVING...' : 'ADMIT PATIENT'}
                         </button>
@@ -546,7 +548,7 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
     if (isLoading || !admission) return null;
 
     return (
-        <div className="fixed inset-0 bg-primary/20 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4 font-sans text-foreground overflow-hidden animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4 font-sans text-foreground overflow-hidden animate-in fade-in duration-300">
             <div className="bg-card w-full max-w-6xl rounded-[24px] shadow-2xl overflow-hidden border border-border flex flex-col my-auto animate-in zoom-in-95 duration-300 max-h-[95vh] relative">
                 {/* Decorative Background Elements */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
@@ -554,16 +556,16 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
 
                 <div className="p-5 px-8 border-b border-border bg-muted/20 flex justify-between items-center shrink-0 relative z-10">
                     <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                        <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
                             <Activity className="h-5 w-5" />
                         </div>
                         <div>
                             <div className="flex items-center gap-2.5 mb-0.5">
-                                <h1 className="text-xl font-black tracking-tighter text-slate-900 uppercase font-fira-sans leading-none">{admission.patient.first_name} {admission.patient.last_name}</h1>
-                                <span className="px-1.5 py-0.5 bg-cyan-100/50 border border-cyan-200 text-cyan-700 text-[8px] font-black uppercase rounded-full tracking-widest font-fira-code">{admission.patient.mrn}</span>
+                                <h1 className="text-xl font-black tracking-tighter text-foreground uppercase font-fira-sans leading-none">{admission.patient.first_name} {admission.patient.last_name}</h1>
+                                <span className="px-1.5 py-0.5 bg-primary/10 border border-primary/20 text-primary text-[8px] font-black uppercase rounded-full tracking-widest font-fira-code">{admission.patient.mrn}</span>
                             </div>
-                            <p className="text-[8px] text-slate-400 font-black uppercase tracking-[0.15em] flex items-center gap-1.5 font-fira-code">
-                                <Building2 size={10} className="text-emerald-500" />
+                            <p className="text-[8px] text-muted-foreground font-black uppercase tracking-[0.15em] flex items-center gap-1.5 font-fira-code">
+                                <Building2 size={10} className="text-primary" />
                                 <span>{admission.bed.ward.name}</span>
                                 <span className="opacity-30">•</span>
                                 <span>Bed {admission.bed.bed_number}</span>
@@ -572,15 +574,15 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="text-right">
-                            <p className="text-xl font-black text-slate-900 tracking-tighter leading-none mb-0.5">{currencyFormat(admission.running_total)}</p>
-                            <p className="text-[7.5px] text-slate-400 uppercase font-black tracking-[0.2em] font-fira-code">Total Charges</p>
+                            <p className="text-xl font-black text-foreground tracking-tighter leading-none mb-0.5">{currencyFormat(admission.running_total)}</p>
+                            <p className="text-[7.5px] text-muted-foreground uppercase font-black tracking-[0.2em] font-fira-code">Total Charges</p>
                         </div>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => onTransfer(admission.id, admission.bed.bed_number)}
-                                className="h-8 px-3 bg-white border border-emerald-100 text-slate-600 text-[8px] font-black uppercase rounded-lg hover:bg-emerald-50 transition-all shadow-sm flex items-center gap-1.5 active:scale-95 font-fira-code"
+                                className="h-8 px-3 bg-card border border-border text-muted-foreground text-[8px] font-black uppercase rounded-lg hover:bg-muted transition-all shadow-sm flex items-center gap-1.5 active:scale-95 font-fira-code"
                             >
-                                <ArrowRightLeft className="h-3 w-3 text-emerald-600" />
+                                <ArrowRightLeft className="h-3 w-3 text-primary" />
                                 Transfer
                             </button>
                             <button
@@ -591,12 +593,12 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
                                 Discharge
                             </button>
                         </div>
-                        <div className="h-8 w-[1px] bg-emerald-100 mx-1" />
-                        <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-emerald-50 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all border border-emerald-100 shadow-sm text-lg active:scale-95 cursor-pointer">×</button>
+                        <div className="h-8 w-[1px] bg-border mx-1" />
+                        <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-rose-500 transition-all border border-border shadow-sm text-lg active:scale-95 cursor-pointer">×</button>
                     </div>
                 </div>
 
-                <div className="flex px-8 bg-white/50 border-b border-emerald-50 gap-1 overflow-x-auto custom-scrollbar">
+                <div className="flex px-8 bg-card/50 border-b border-border gap-1 overflow-x-auto custom-scrollbar">
                     {[
                         { id: 'vitals', label: 'Vitals', icon: Zap },
                         { id: 'notes', label: 'Progress Notes', icon: FileStack },
@@ -606,11 +608,11 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
-                            className={`flex items-center gap-2 px-4 py-3 text-[8.5px] font-black uppercase tracking-[0.1em] transition-all relative font-fira-code whitespace-nowrap ${activeTab === tab.id ? 'text-emerald-700' : 'text-slate-400 hover:text-emerald-600'}`}
+                            className={`flex items-center gap-2 px-4 py-3 text-[8.5px] font-black uppercase tracking-[0.1em] transition-all relative font-fira-code whitespace-nowrap ${activeTab === tab.id ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
                         >
-                            <tab.icon className={`h-3 w-3 ${activeTab === tab.id ? 'text-emerald-600' : 'text-slate-300'}`} />
+                            <tab.icon className={`h-3 w-3 ${activeTab === tab.id ? 'text-primary' : 'text-muted-foreground/50'}`} />
                             {tab.label}
-                            {activeTab === tab.id && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600 rounded-t-full" />}
+                            {activeTab === tab.id && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />}
                         </button>
                     ))}
                 </div>
@@ -630,7 +632,7 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
                                     notes: formData.get('notes')?.toString() || ''
                                 });
                                 e.target.reset();
-                            }} className="bg-card/60 backdrop-blur-xl p-5 rounded-[24px] border border-border shadow-xl flex flex-col gap-5">
+                            }} className="bg-card/40 backdrop-blur-xl p-5 rounded-[24px] border border-border shadow-xl flex flex-col gap-5">
                                 <div className="flex items-center gap-2.5 mb-1">
                                     <div className="h-7 w-7 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-600">
                                         <History size={16} />
@@ -986,8 +988,8 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
                                                         <div className="flex items-center justify-center gap-2">
                                                             <span className={cn(
                                                                 'text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md border shadow-sm',
-                                                                c.service_status === 'APPROVED' || c.service_status === 'READY' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
-                                                                    c.service_status === 'PENDING_APPROVAL' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20 animate-pulse' :
+                                                                c.service_status === 'APPROVED' || c.service_status === 'READY' ? 'bg-primary/10 text-primary border-primary/20' :
+                                                                    c.service_status === 'PENDING_APPROVAL' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 animate-pulse' :
                                                                         'bg-muted text-muted-foreground border-border'
                                                             )}>
                                                                 {c.service_status}
@@ -1026,8 +1028,8 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
                                                 <td className="px-6 py-4 text-right font-black text-2xl text-foreground tracking-tighter">{currencyFormat(Number(admission.stay_details.stay_cost) + (admission.charges?.reduce((s: any, c: any) => s + (Number(c.amount) * (c.quantity || 1)), 0) || 0))}</td>
                                             </tr>
                                             <tr>
-                                                <td colSpan={4} className="px-6 py-4 text-right text-[9px] font-black uppercase tracking-[0.2em] text-emerald-600">Advance Paid</td>
-                                                <td className="px-6 py-4 text-right font-black text-xl text-emerald-600 tracking-tighter">-{currencyFormat(admission.advance_paid)}</td>
+                                                <td colSpan={4} className="px-6 py-4 text-right text-[9px] font-black uppercase tracking-[0.2em] text-primary">Advance Paid</td>
+                                                <td className="px-6 py-4 text-right font-black text-xl text-primary tracking-tighter">-{currencyFormat(admission.advance_paid)}</td>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -1048,21 +1050,21 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
                                 });
                                 queryClient.invalidateQueries({ queryKey: ['admission', id] });
                                 e.target.reset();
-                            }} className="bg-emerald-500/[0.03] backdrop-blur-xl p-5 rounded-[24px] border border-emerald-500/20 grid grid-cols-12 gap-4 shadow-xl relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-3xl -mr-12 -mt-12 pointer-events-none" />
+                            }} className="bg-primary/5 backdrop-blur-xl p-5 rounded-[24px] border border-primary/20 grid grid-cols-12 gap-4 shadow-xl relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-3xl -mr-12 -mt-12 pointer-events-none" />
                                 <div className="col-span-12 mb-1 flex items-center gap-2.5">
-                                    <div className="h-7 w-7 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-600">
+                                    <div className="h-7 w-7 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
                                         <Landmark size={14} />
                                     </div>
-                                    <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-[0.2em]">Add Payment</h4>
+                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Add Payment</h4>
                                 </div>
                                 <div className="col-span-12 lg:col-span-4 space-y-1.5">
-                                    <label className="block text-[9px] font-black text-emerald-700 uppercase tracking-widest ml-1">Amount</label>
-                                    <input name="amount" type="number" step="0.01" required className="w-full h-10 px-3 bg-card border border-emerald-500/20 rounded-xl text-[13px] font-black focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all shadow-sm" placeholder="0.00" />
+                                    <label className="block text-[9px] font-black text-primary uppercase tracking-widest ml-1">Amount</label>
+                                    <input name="amount" type="number" step="0.01" required className="w-full h-10 px-3 bg-card border border-primary/20 rounded-xl text-[13px] font-black focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm" placeholder="0.00" />
                                 </div>
                                 <div className="col-span-12 lg:col-span-4 space-y-1.5">
-                                    <label className="block text-[9px] font-black text-emerald-700 uppercase tracking-widest ml-1">Method</label>
-                                    <select name="method" className="w-full h-10 px-3 bg-card border border-emerald-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer">
+                                    <label className="block text-[9px] font-black text-primary uppercase tracking-widest ml-1">Method</label>
+                                    <select name="method" className="w-full h-10 px-3 bg-card border border-primary/20 rounded-xl text-[9px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer">
                                         <option value="CASH">Cash</option>
                                         <option value="CARD">Card</option>
                                         <option value="BANK_TRANSFER">Bank Transfer</option>
@@ -1070,11 +1072,11 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
                                     </select>
                                 </div>
                                 <div className="col-span-12 lg:col-span-3 space-y-1.5">
-                                    <label className="block text-[9px] font-black text-emerald-700 uppercase tracking-widest ml-1">Reference/Notes</label>
-                                    <input name="notes" className="w-full h-10 px-3 bg-card border border-emerald-500/20 rounded-xl text-[13px] font-bold outline-none shadow-sm" placeholder="Receipt / Txn ID" />
+                                    <label className="block text-[9px] font-black text-primary uppercase tracking-widest ml-1">Reference/Notes</label>
+                                    <input name="notes" className="w-full h-10 px-3 bg-card border border-primary/20 rounded-xl text-[13px] font-bold outline-none shadow-sm" placeholder="Receipt / Txn ID" />
                                 </div>
                                 <div className="col-span-12 lg:col-span-1 pt-[21px]">
-                                    <button type="submit" className="w-full h-10 bg-emerald-600 text-white rounded-lg flex items-center justify-center hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-emerald-600/20">
+                                    <button type="submit" className="w-full h-10 bg-primary text-primary-foreground rounded-lg flex items-center justify-center hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-primary/20">
                                         <Plus className="h-5 w-5" />
                                     </button>
                                 </div>
@@ -1100,22 +1102,22 @@ function AdmissionDetailModal({ id, onClose, onTransfer, onConfirmAction }: { id
                                                 <tr key={p.id} className="hover:bg-muted/5 transition-colors">
                                                     <td className="px-6 py-4 text-[11px] font-bold text-foreground">{formatDate(new Date(p.payment_date), 'MMM d, HH:mm')}</td>
                                                     <td className="px-6 py-4">
-                                                        <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-emerald-500/10 text-emerald-600 rounded-md border border-emerald-500/20">{p.method}</span>
+                                                        <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-primary/10 text-primary rounded-md border border-primary/20">{p.method}</span>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <span className="text-[10px] font-mono font-black text-muted-foreground uppercase opacity-60 tracking-tighter">{p.id.slice(0, 8).toUpperCase()}</span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-right font-black text-emerald-600 text-[15px] tracking-tighter">{currencyFormat(p.amount)}</td>
+                                                    <td className="px-6 py-4 text-right font-black text-primary text-[15px] tracking-tighter">{currencyFormat(p.amount)}</td>
                                                 </tr>
                                             ))}
                                             {(!admission.payments || admission.payments.length === 0) && (
                                                 <tr><td colSpan={4} className="px-6 py-12 text-center text-muted-foreground font-black italic uppercase tracking-[0.2em] opacity-30 text-[9px]">No historical credits found</td></tr>
                                             )}
                                         </tbody>
-                                        <tfoot className="bg-emerald-500/[0.03] border-t border-emerald-500/20">
+                                        <tfoot className="bg-primary/5 border-t border-primary/20">
                                             <tr>
-                                                <td colSpan={3} className="px-6 py-4 text-right text-[9px] font-black uppercase tracking-[0.2em] text-emerald-800">Total Paid</td>
-                                                <td className="px-6 py-4 text-right font-black text-emerald-800 text-2xl tracking-tighter">{currencyFormat(admission.advance_paid)}</td>
+                                                <td colSpan={3} className="px-6 py-4 text-right text-[9px] font-black uppercase tracking-[0.2em] text-primary">Total Paid</td>
+                                                <td className="px-6 py-4 text-right font-black text-primary text-2xl tracking-tighter">{currencyFormat(admission.advance_paid)}</td>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -1159,12 +1161,12 @@ function CreateWardModal({ onClose }: { onClose: () => void }) {
                 {/* Decorative Elements */}
                 <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl -mr-24 -mt-24 pointer-events-none" />
 
-                <div className="p-8 border-b border-border bg-muted/20 flex justify-between items-center relative z-10">
+                <div className="p-8 border-b border-border bg-muted/20 flex justify-between items-center relative z-10 text-foreground">
                     <div>
                         <h2 className="text-2xl font-black tracking-tighter text-foreground uppercase">Create New Ward</h2>
                         <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">Add a new ward to the system</p>
                     </div>
-                    <button onClick={onClose} className="h-10 w-10 flex items-center justify-center rounded-2xl hover:bg-muted transition-all text-2xl border border-border shadow-sm">×</button>
+                    <button onClick={onClose} className="h-10 w-10 flex items-center justify-center rounded-2xl hover:bg-muted transition-all text-2xl border border-border shadow-sm text-foreground">×</button>
                 </div>
                 <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="p-8 space-y-6 relative z-10">
                     <div className="grid grid-cols-2 gap-6">
@@ -1265,12 +1267,12 @@ function EditWardModal({ ward, onClose }: { ward: any, onClose: () => void }) {
                 {/* Decorative Elements */}
                 <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl -mr-24 -mt-24 pointer-events-none" />
 
-                <div className="p-8 border-b border-border bg-muted/20 flex justify-between items-center relative z-10">
+                <div className="p-8 border-b border-border bg-muted/20 flex justify-between items-center relative z-10 text-foreground">
                     <div>
                         <h2 className="text-2xl font-black tracking-tighter text-foreground uppercase">Edit Ward</h2>
                         <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">Updating {ward.name}</p>
                     </div>
-                    <button onClick={onClose} className="h-10 w-10 flex items-center justify-center rounded-2xl hover:bg-muted transition-all text-2xl border border-border shadow-sm">×</button>
+                    <button onClick={onClose} className="h-10 w-10 flex items-center justify-center rounded-2xl hover:bg-muted transition-all text-2xl border border-border shadow-sm text-foreground">×</button>
                 </div>
 
                 <form onSubmit={handleSubmit((data) => editMutation.mutate({ ...data, daily_rate: Number(data.daily_rate) }))} className="p-8 space-y-6 relative z-10">
@@ -1363,7 +1365,7 @@ function TransferModal({ admissionId, currentBed, onClose }: { admissionId: stri
                 {/* Decorative Elements */}
                 <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl -mr-24 -mt-24 pointer-events-none" />
 
-                <div className="p-8 border-b border-border bg-muted/20 relative z-10 flex justify-between items-center">
+                <div className="p-8 border-b border-border bg-muted/20 relative z-10 flex justify-between items-center text-foreground">
                     <div>
                         <h2 className="text-2xl font-black tracking-tighter text-foreground flex items-center gap-3 uppercase">
                             <ArrowRightLeft className="h-6 w-6 text-primary" />
@@ -1371,7 +1373,7 @@ function TransferModal({ admissionId, currentBed, onClose }: { admissionId: stri
                         </h2>
                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Transferring patient from bed: {currentBed}</p>
                     </div>
-                    <button onClick={onClose} className="h-10 w-10 flex items-center justify-center rounded-2xl hover:bg-muted transition-all text-2xl border border-border shadow-sm">×</button>
+                    <button onClick={onClose} className="h-10 w-10 flex items-center justify-center rounded-2xl hover:bg-muted transition-all text-2xl border border-border shadow-sm text-foreground">×</button>
                 </div>
 
                 <form onSubmit={handleSubmit((data) => transferMutation.mutate(data))} className="p-8 space-y-6 relative z-10">

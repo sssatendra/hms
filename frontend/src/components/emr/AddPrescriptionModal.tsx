@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Search, User, X, Check, Loader2, Plus, Trash2, Pill, Clock, 
-  Calendar, Info, RefreshCw, ChevronDown, Shield, Microscope,
-  ArrowRight, Activity, Zap
+import {
+    Search, User, X, Check, Loader2, Plus, Trash2, Pill, Clock,
+    Calendar, Info, RefreshCw, ChevronDown, Shield, Microscope,
+    ArrowRight, Activity, Zap
 } from 'lucide-react';
 import { coreApi } from '@/lib/api';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
@@ -85,10 +85,10 @@ export default function AddPrescriptionModal({ onClose }: AddPrescriptionModalPr
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-emerald-950/40 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative bg-white w-full max-w-5xl max-h-[92vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-emerald-100 animate-in zoom-in-95 duration-300 font-fira-sans">
-                
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={onClose} />
+            <div className="relative bg-card w-full max-w-5xl max-h-[92vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-border animate-in zoom-in-95 duration-300 font-fira-sans">
+
                 {/* Pharmacy/Emerald Header */}
                 <div className="bg-gradient-to-r from-[#065F46] to-[#059669] px-6 py-4 text-white shrink-0 relative overflow-hidden">
                     <div className="relative z-10 flex items-center justify-between">
@@ -105,9 +105,9 @@ export default function AddPrescriptionModal({ onClose }: AddPrescriptionModalPr
                                 </div>
                             </div>
                         </div>
-                        
-                        <button 
-                            onClick={onClose} 
+
+                        <button
+                            onClick={onClose}
                             className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/20 transition-all flex items-center justify-center border border-white/10"
                         >
                             <X className="h-4 w-4" />
@@ -116,9 +116,9 @@ export default function AddPrescriptionModal({ onClose }: AddPrescriptionModalPr
                     <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-emerald-400/20 rounded-full blur-[60px]" />
                 </div>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-8 bg-slate-50/30 custom-scrollbar">
+                <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-8 bg-card custom-scrollbar">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                        
+
                         {/* Clinical Context Sidebar */}
                         <div className="lg:col-span-4 space-y-6">
                             <section className="space-y-4">
@@ -135,10 +135,10 @@ export default function AddPrescriptionModal({ onClose }: AddPrescriptionModalPr
                                             placeholder="Audit Registry (Name/MRN)..."
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-100 rounded-xl text-[11px] font-bold focus:ring-4 focus:ring-emerald-50 outline-none transition-all shadow-lg shadow-emerald-500/5 font-fira-sans h-[40px]"
+                                            className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-xl text-[11px] font-bold focus:ring-4 focus:ring-emerald-50 outline-none transition-all shadow-lg shadow-emerald-500/5 font-fira-sans h-[40px] text-foreground"
                                         />
                                         {searching && <RefreshCw className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-emerald-500" />}
-                                        
+
                                         {debouncedSearch.length > 2 && patientResults?.data && (
                                             <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-emerald-100 rounded-2xl shadow-2xl z-50 overflow-hidden divide-y divide-emerald-50 animate-in slide-in-from-top-2 duration-300">
                                                 {patientResults.data.map((p: any) => (
@@ -159,7 +159,7 @@ export default function AddPrescriptionModal({ onClose }: AddPrescriptionModalPr
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="p-3 bg-white rounded-2xl border border-emerald-200 shadow-lg shadow-emerald-500/5 flex items-center justify-between group transition-all hover:bg-emerald-50/30 h-[54px]">
+                                    <div className="p-3 bg-card rounded-2xl border border-border shadow-lg shadow-emerald-500/5 flex items-center justify-between group transition-all hover:bg-muted/30 h-[54px]">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#065F46] to-[#059669] text-white flex items-center justify-center text-sm font-black shadow-lg shadow-emerald-500/20">
                                                 {selectedPatient.first_name[0]}{selectedPatient.last_name[0]}
@@ -179,11 +179,11 @@ export default function AddPrescriptionModal({ onClose }: AddPrescriptionModalPr
                             <section className="space-y-4 pt-6 border-t border-slate-100">
                                 <div className="space-y-1.5 group">
                                     <label className="text-[8px] font-black tracking-widest uppercase text-slate-400 mb-0.5 block ml-1 font-fira-code group-focus-within:text-emerald-600 transition-colors">Diagnosis Index</label>
-                                    <input {...register('diagnosis')} placeholder="Diagnosis code or description..." className="w-full px-4 py-2.5 bg-white border border-emerald-100 rounded-xl text-[11px] font-bold focus:ring-4 focus:ring-emerald-50 outline-none shadow-lg shadow-emerald-500/5 transition-all font-fira-sans h-[40px]" />
+                                    <input {...register('diagnosis')} placeholder="Diagnosis code or description..." className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-[11px] font-bold focus:ring-4 focus:ring-emerald-50 outline-none shadow-lg shadow-emerald-500/5 transition-all font-fira-sans h-[40px] text-foreground" />
                                 </div>
                                 <div className="space-y-1.5 group">
                                     <label className="text-[8px] font-black tracking-widest uppercase text-slate-400 mb-0.5 block ml-1 font-fira-code group-focus-within:text-emerald-600 transition-colors">Directives</label>
-                                    <textarea {...register('notes')} rows={3} placeholder="Pharmacy directives..." className="w-full px-4 py-3 bg-white border border-emerald-100 rounded-xl text-[10px] font-medium focus:ring-4 focus:ring-emerald-50 outline-none shadow-lg shadow-emerald-500/5 transition-all font-fira-sans resize-none" />
+                                    <textarea {...register('notes')} rows={3} placeholder="Pharmacy directives..." className="w-full px-4 py-3 bg-background border border-border rounded-xl text-[10px] font-medium focus:ring-4 focus:ring-emerald-50 outline-none shadow-lg shadow-emerald-500/5 transition-all font-fira-sans resize-none text-foreground" />
                                 </div>
                                 <div className="group">
                                     <Controller
@@ -194,18 +194,18 @@ export default function AddPrescriptionModal({ onClose }: AddPrescriptionModalPr
                                                 label="VALIDITY"
                                                 value={field.value}
                                                 onChange={field.onChange}
-                                                className="h-[40px] rounded-xl px-4 bg-white border-emerald-100 shadow-lg shadow-emerald-500/5 font-fira-code text-[8px]"
+                                                className="h-[40px] rounded-xl px-4 bg-background border-border shadow-lg shadow-emerald-500/5 font-fira-code text-[8px] text-foreground"
                                             />
                                         )}
                                     />
                                 </div>
-                                
+
                                 <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 space-y-2 shadow-inner">
-                                   <div className="flex items-center gap-1.5 text-amber-600">
-                                      <Info size={12} />
-                                      <span className="text-[7.5px] font-black uppercase tracking-widest font-fira-code">Directive</span>
-                                   </div>
-                                   <p className="text-[9.5px] font-bold text-amber-700/70 leading-relaxed font-fira-sans uppercase">AUTHENTICATION REQUIRED. VOIDING REQUIRES TIMESTAMP.</p>
+                                    <div className="flex items-center gap-1.5 text-amber-600">
+                                        <Info size={12} />
+                                        <span className="text-[7.5px] font-black uppercase tracking-widest font-fira-code">Directive</span>
+                                    </div>
+                                    <p className="text-[9.5px] font-bold text-amber-700/70 leading-relaxed font-fira-sans uppercase">AUTHENTICATION REQUIRED. VOIDING REQUIRES TIMESTAMP.</p>
                                 </div>
                             </section>
                         </div>
@@ -214,7 +214,7 @@ export default function AddPrescriptionModal({ onClose }: AddPrescriptionModalPr
                         <div className="lg:col-span-8 space-y-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                     <div className="flex items-center gap-2 ml-1">
+                                    <div className="flex items-center gap-2 ml-1">
                                         <Microscope size={14} className="text-emerald-600" />
                                         <h3 className="text-[9px] font-black text-emerald-600 uppercase tracking-[0.2em] font-fira-code">Therapy Ledger ({fields.length})</h3>
                                     </div>
@@ -226,7 +226,7 @@ export default function AddPrescriptionModal({ onClose }: AddPrescriptionModalPr
                                         drug_name: '', dosage: '', dosage_unit: 'mg', frequency: 'Daily', duration: '7 days',
                                         quantity_prescribed: 7, refills: 0, route: 'Oral', instructions: '', is_substitutable: false
                                     })}
-                                    className="px-5 py-2 bg-white text-emerald-700 rounded-xl text-[8px] font-black uppercase tracking-widest border border-emerald-100 hover:bg-emerald-50 transition-all flex items-center gap-2 font-fira-code shadow-sm group active:scale-95"
+                                    className="px-5 py-2 bg-card text-emerald-700 rounded-xl text-[8px] font-black uppercase tracking-widest border border-border hover:bg-muted transition-all flex items-center gap-2 font-fira-code shadow-sm group active:scale-95"
                                 >
                                     <Plus className="h-3.5 w-3.5 group-hover:rotate-90 transition-transform" />
                                     Add Agent
@@ -235,7 +235,7 @@ export default function AddPrescriptionModal({ onClose }: AddPrescriptionModalPr
 
                             <div className="space-y-4">
                                 {fields.map((field, index) => (
-                                    <div key={field.id} className="p-5 bg-white/70 backdrop-blur-sm border border-emerald-100 rounded-2xl relative group/item hover:border-emerald-300 transition-all duration-300 shadow-lg shadow-emerald-500/5">
+                                    <div key={field.id} className="p-5 bg-card/70 backdrop-blur-sm border border-border rounded-2xl relative group/item hover:border-emerald-300 transition-all duration-300 shadow-lg shadow-emerald-500/5">
                                         {fields.length > 1 && (
                                             <button
                                                 type="button"
@@ -250,45 +250,45 @@ export default function AddPrescriptionModal({ onClose }: AddPrescriptionModalPr
                                             <div className="md:col-span-12 lg:col-span-6">
                                                 <label className="text-[7.5px] font-black text-slate-400 tracking-widest uppercase mb-1.5 block ml-1 font-fira-code group-focus-within/item:text-emerald-600">Pharmacological Agent Selection</label>
                                                 <div className="relative group/agent">
-                                                     <Pill className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-emerald-300 group-focus-within/agent:text-emerald-500 transition-colors" />
-                                                     <input
+                                                    <Pill className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-emerald-300 group-focus-within/agent:text-emerald-500 transition-colors" />
+                                                    <input
                                                         {...register(`items.${index}.drug_name` as const, { required: true })}
                                                         placeholder="Locate therapy agent..."
-                                                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold focus:ring-4 focus:ring-emerald-50 outline-none transition-all font-fira-sans h-[36px]"
-                                                     />
+                                                        className="w-full pl-10 pr-4 py-2 bg-muted/20 border border-border rounded-xl text-[11px] font-bold focus:ring-4 focus:ring-emerald-50 outline-none transition-all font-fira-sans h-[36px] text-foreground"
+                                                    />
                                                 </div>
                                             </div>
                                             <div className="md:col-span-6 lg:col-span-3">
                                                 <label className="text-[7.5px] font-black text-slate-400 tracking-widest uppercase mb-1.5 block ml-1 font-fira-code">Strength</label>
                                                 <div className="flex gap-1.5">
-                                                    <input {...register(`items.${index}.dosage` as const)} placeholder="500" className="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold outline-none font-fira-sans h-[36px]" />
-                                                    <input {...register(`items.${index}.dosage_unit` as const)} className="w-16 px-2.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[9px] font-black uppercase tracking-widest outline-none font-fira-code h-[36px]" />
+                                                    <input {...register(`items.${index}.dosage` as const)} placeholder="500" className="flex-1 px-3.5 py-2 bg-muted/20 border border-border rounded-xl text-[11px] font-bold outline-none font-fira-sans h-[36px] text-foreground" />
+                                                    <input {...register(`items.${index}.dosage_unit` as const)} className="w-16 px-2.5 py-2 bg-muted/20 border border-border rounded-xl text-[9px] font-black uppercase tracking-widest outline-none font-fira-code h-[36px] text-foreground" />
                                                 </div>
                                             </div>
                                             <div className="md:col-span-6 lg:col-span-3">
                                                 <label className="text-[7.5px] font-black text-slate-400 tracking-widest uppercase mb-1.5 block ml-1 font-fira-code">Frequency</label>
-                                                <input {...register(`items.${index}.frequency` as const)} placeholder="TID" className="w-full px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold outline-none font-fira-sans h-[36px]" />
+                                                <input {...register(`items.${index}.frequency` as const)} placeholder="TID" className="w-full px-3.5 py-2 bg-muted/20 border border-border rounded-xl text-[11px] font-bold outline-none font-fira-sans h-[36px] text-foreground" />
                                             </div>
 
                                             <div className="md:col-span-4 lg:col-span-3">
                                                 <label className="text-[7.5px] font-black text-slate-400 tracking-widest uppercase mb-1.5 block ml-1 font-fira-code">Duration</label>
                                                 <div className="relative group/field">
                                                     <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-emerald-300 group-focus-within/field:text-emerald-500 transition-colors" />
-                                                    <input {...register(`items.${index}.duration` as const)} className="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[9px] font-black outline-none font-fira-code tracking-widest h-[36px]" />
+                                                    <input {...register(`items.${index}.duration` as const)} className="w-full pl-10 pr-3 py-2 bg-muted/20 border border-border rounded-xl text-[9px] font-black outline-none font-fira-code tracking-widest h-[36px] text-foreground" />
                                                 </div>
                                             </div>
                                             <div className="md:col-span-4 lg:col-span-3">
                                                 <label className="text-[7.5px] font-black text-slate-400 tracking-widest uppercase mb-1.5 block ml-1 font-fira-code">QTY</label>
                                                 <div className="relative group/field">
                                                     <Zap className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-emerald-300 group-focus-within/field:text-emerald-500 transition-colors" />
-                                                    <input type="number" {...register(`items.${index}.quantity_prescribed` as const)} className="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold outline-none font-fira-sans h-[36px]" />
+                                                    <input type="number" {...register(`items.${index}.quantity_prescribed` as const)} className="w-full pl-10 pr-3 py-2 bg-muted/20 border border-border rounded-xl text-[11px] font-bold outline-none font-fira-sans h-[36px] text-foreground" />
                                                 </div>
                                             </div>
                                             <div className="md:col-span-4 lg:col-span-6">
                                                 <label className="text-[7.5px] font-black text-slate-400 tracking-widest uppercase mb-1.5 block ml-1 font-fira-code">Directives</label>
                                                 <div className="relative group/field">
                                                     <ArrowRight className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-emerald-300 group-focus-within/field:text-emerald-500 transition-colors" />
-                                                    <input {...register(`items.${index}.instructions` as const)} placeholder="Route & Precautions..." className="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black tracking-tight outline-none font-fira-sans placeholder:italic h-[36px]" />
+                                                    <input {...register(`items.${index}.instructions` as const)} placeholder="Route & Precautions..." className="w-full pl-10 pr-3 py-2 bg-muted/20 border border-border rounded-xl text-[10px] font-black tracking-tight outline-none font-fira-sans placeholder:italic h-[36px] text-foreground" />
                                                 </div>
                                             </div>
                                         </div>
@@ -301,7 +301,7 @@ export default function AddPrescriptionModal({ onClose }: AddPrescriptionModalPr
                 </form>
 
                 {/* Secure Action Footer */}
-                <div className="px-6 py-4 border-t border-emerald-100 bg-white flex justify-between items-center shrink-0">
+                <div className="px-6 py-4 border-t border-border bg-card flex justify-between items-center shrink-0">
                     <div className="flex items-center gap-2">
                         <Shield size={14} className="text-emerald-500/40" />
                         <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-300 font-fira-code uppercase leading-none">Secure Encryption Active</span>

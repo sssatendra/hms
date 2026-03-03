@@ -12,52 +12,52 @@ export function LandingHero() {
 
             <div className="max-w-7xl mx-auto px-10 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
-                    <div className="space-y-12 text-center lg:text-left animate-in slide-in-from-left-12 duration-1000">
+                    <div className="space-y-10 text-center lg:text-left animate-in slide-in-from-left-12 duration-1000">
                         <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-white/70 backdrop-blur-md text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-[0.25em] border border-emerald-100/50 shadow-xl shadow-emerald-500/5 font-fira-code">
                             <span className="relative flex h-2.5 w-2.5">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                             </span>
-                            HMS v4.0 Protocol Active
+                            Clinical OS v4.0 Active
                         </div>
 
-                        <h1 className="text-4xl lg:text-5xl font-black text-slate-900 leading-[1.1] tracking-[-0.05em] uppercase">
-                            Clinical <span className="text-emerald-900 px-2 inline-block">Intelligence</span>
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-700 block mt-1">Redefined.</span>
+                        <h1 className="text-5xl lg:text-7xl font-black text-slate-900 leading-[0.9] tracking-tighter uppercase mb-2">
+                            The Next-Gen <br />
+                            <span className="text-emerald-600">Hospital</span> Data Fabric
                         </h1>
 
-                        <p className="text-base text-slate-500 font-semibold leading-relaxed max-w-lg mx-auto lg:mx-0 tracking-tight">
-                            The unified HIS that orchestrates <span className="text-emerald-950">Diagnostics</span>, <span className="text-emerald-950">Logistics</span>, and <span className="text-emerald-950">Patient Care</span> into a single, high-resolution platform.
+                        <p className="text-lg lg:text-xl text-slate-500 font-bold max-w-2xl mx-auto lg:mx-0 leading-relaxed tracking-tight">
+                            Orchestrate <span className="text-emerald-950">Wards</span>, <span className="text-emerald-950">Pharmacy POS</span>, and <span className="text-emerald-950">Fiscal Accounting</span> with a deep clinical operating system for precision medicine.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                             <Link
                                 href="/register"
-                                className="group flex items-center justify-center gap-2.5 px-6 py-3.5 bg-emerald-900 text-white rounded-xl font-black text-[9px] uppercase tracking-[0.2em] shadow-xl shadow-emerald-900/20 hover:bg-emerald-800 hover:-translate-y-1 transition-all duration-500 font-fira-code"
+                                className="group flex items-center justify-center gap-3 px-8 py-4 bg-emerald-950 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.25em] shadow-2xl shadow-emerald-950/20 hover:bg-emerald-900 hover:-translate-y-1 transition-all duration-500 font-fira-code"
                             >
                                 Initiate Protocol
-                                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                             </Link>
                             <Link
-                                href="#pricing"
-                                className="px-6 py-3.5 bg-white/70 backdrop-blur-md border border-emerald-100 text-slate-900 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:-translate-y-1 transition-all duration-500 shadow-lg shadow-emerald-500/5 text-center font-fira-code"
+                                href="#features"
+                                className="px-8 py-4 bg-white/70 backdrop-blur-md border border-emerald-100 text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-[0.25em] hover:bg-white hover:-translate-y-1 transition-all duration-500 shadow-lg shadow-emerald-500/5 text-center font-fira-code"
                             >
-                                Explore Matrix
+                                Explore Modules
                             </Link>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-6 pt-8 border-t border-emerald-100/50">
+                        <div className="grid grid-cols-3 gap-8 pt-10 border-t border-emerald-100/50">
                             {[
-                                { label: 'Response', value: '<20ms', icon: Zap },
-                                { label: 'Security', value: 'AES-256', icon: ShieldCheck },
-                                { label: 'Sync', value: 'Live', icon: Globe },
+                                { label: 'Query Latency', value: '<12ms', icon: Zap },
+                                { label: 'Data Encryption', value: 'ECC-521', icon: ShieldCheck },
+                                { label: 'Node Uptime', value: '99.99%', icon: Globe },
                             ].map((stat) => (
-                                <div key={stat.label} className="space-y-0.5">
-                                    <div className="flex items-center gap-1.5 text-slate-400">
-                                        <stat.icon size={12} className="text-emerald-500" />
-                                        <span className="text-[7.5px] font-black uppercase tracking-[0.15em] font-fira-code">{stat.label}</span>
+                                <div key={stat.label} className="space-y-1">
+                                    <div className="flex items-center gap-2 text-slate-400">
+                                        <stat.icon size={14} className="text-emerald-500" />
+                                        <span className="text-[8px] font-black uppercase tracking-[0.2em] font-fira-code">{stat.label}</span>
                                     </div>
-                                    <p className="text-lg font-black text-slate-900 tracking-tighter font-fira-sans">{stat.value}</p>
+                                    <p className="text-2xl font-black text-slate-950 tracking-tighter font-fira-sans leading-none">{stat.value}</p>
                                 </div>
                             ))}
                         </div>
@@ -67,7 +67,7 @@ export function LandingHero() {
                         {/* High-Fidelity Mockup Architecture */}
                         <div className="bg-white/80 backdrop-blur-3xl p-4 rounded-[40px] shadow-[0_32px_64px_-16px_rgba(16,185,129,0.1)] border border-emerald-100 relative group overflow-hidden max-w-[540px] ml-auto">
                             <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-[40px]" />
-                            
+
                             {/* Inner Dashboard Core */}
                             <div className="bg-slate-50/50 rounded-[32px] w-full aspect-[4/3.2] flex flex-col p-6 space-y-4 border border-emerald-50 shadow-inner">
                                 {/* Synthetic Header */}
@@ -81,7 +81,7 @@ export function LandingHero() {
                                         <div className="h-8 w-8 bg-emerald-900 rounded-full shadow-md shadow-emerald-900/20" />
                                     </div>
                                 </div>
-                                
+
                                 {/* Synthetic Grid */}
                                 <div className="grid grid-cols-12 gap-4 flex-1">
                                     <div className="col-span-4 bg-white/90 p-4 rounded-2xl border border-emerald-50 shadow-lg shadow-emerald-500/5 space-y-4">
@@ -115,7 +115,7 @@ export function LandingHero() {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Floating intelligence Node */}
                             <div className="absolute -bottom-6 -right-6 bg-emerald-900 p-5 rounded-[24px] shadow-2xl shadow-emerald-900/30 animate-bounce-slow border border-emerald-800 z-20">
                                 <p className="text-[7.5px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-1 font-fira-code">Throughput</p>

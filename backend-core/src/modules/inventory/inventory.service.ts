@@ -255,4 +255,55 @@ export class InventoryService {
             alerts: alerts.slice(0, 5)
         };
     }
+    /**
+     * Calculates stock forecasting based on consumption rates.
+     */
+    async getStockForecasting(tenantId: string) {
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+
+        // 1. Get all items
+        const items = await this.prisma.inventoryItem.findMany({
+            where: { tenant_id: tenantId },
+            include: {
+                stocks: { where: { quantity: { gt: 0 } } }
+            }
+        });
+
+        const forecasting = [];
+
+        for (const item of items) {
+            // 2. Get OUT movements in the last 30 days for this item
+            const historicalUsage = await this.prisma.inventoryMovement.aggregate({
+                where: {
+                    item_id: item.id,
+                    tenant_id: tenantId,
+                    type: 'OUT',
+                    created_at: { gte: thirtyDaysAgo }
+                },
+                _sum: { quantity: true }
+            });
+
+            const totalUsed = Number(historicalUsage._sum.quantity || 0);
+            const dailyAvg = totalUsed / 30;
+            const currentStock = item.stocks.reduce((sum, s) => sum + Number(s.quantity), 0);
+
+            let daysRemaining: number | 'INF' = 'INF';
+            if (dailyAvg > 0) {
+                daysRemaining = Math.floor(currentStock / dailyAvg);
+            }
+
+            forecasting.push({
+                id: item.id,
+                name: item.name,
+                sku: item.sku,
+                currentStock,
+                dailyAvg: dailyAvg.toFixed(2),
+                daysRemaining,
+                status: daysRemaining === 'INF' ? 'STABLE' : daysRemaining < 7 ? 'CRITICAL' : daysRemaining < 15 ? 'WARNING' : 'STABLE'
+            });
+        }
+
+        return forecasting;
+    }
 }

@@ -20,8 +20,8 @@ export function LandingNavbar() {
     return (
         <nav className={cn(
             "fixed top-4 left-4 right-4 z-50 transition-all duration-500 rounded-2xl px-6 py-3 border transition-all",
-            isScrolled 
-                ? "bg-white/70 backdrop-blur-2xl shadow-2xl shadow-emerald-500/10 border-emerald-100/50 py-2.5 scale-[0.98]" 
+            isScrolled
+                ? "bg-white/70 backdrop-blur-2xl shadow-2xl shadow-emerald-500/10 border-emerald-100/50 py-2.5 scale-[0.98]"
                 : "bg-white/10 backdrop-blur-md border-white/20 py-3"
         )}>
             <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -30,7 +30,7 @@ export function LandingNavbar() {
                         <Building2 className="text-emerald-50" size={22} />
                     </div>
                     <div>
-                        <span className="text-lg font-black tracking-tighter text-slate-900 font-fira-sans uppercase">HMS</span>
+                        <span className="text-lg font-black tracking-tighter text-slate-900 font-fira-sans uppercase">MedOrbit</span>
                         <span className="text-[8px] block font-black uppercase tracking-[0.25em] text-emerald-600 -mt-1 font-fira-code">v4.0 Protocol</span>
                     </div>
                 </Link>

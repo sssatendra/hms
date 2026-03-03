@@ -371,6 +371,7 @@ router.get('/me', authenticate, async (req: Request, res: Response): Promise<voi
         specialization: true,
         license_number: true,
         tenant_id: true,
+        two_factor_enabled: true,
         role: { select: { name: true } },
         department: { select: { id: true, name: true } },
       },

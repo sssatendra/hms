@@ -10,11 +10,11 @@ const tiers = [
         price: '4,999',
         description: 'Perfect for small clinics and specialized practices.',
         features: [
-            'Up to 10 Beds',
-            'Basic Pharmacy Support',
-            'Appointment Scheduling',
-            'Digital Billing',
-            'Standard Support',
+            'Up to 10 Beds Management',
+            'Basic Pharmacy OTC Sales',
+            'Real-time Appointment Logs',
+            'Commercial Usage License',
+            'Standard Email Support',
         ],
         cta: 'Start 14-day Trial',
         popular: false,
@@ -24,12 +24,12 @@ const tiers = [
         price: '9,999',
         description: 'Complete HIS for mid-sized multi-specialty hospitals.',
         features: [
-            'Unlimited Beds',
+            'Unlimited Bed Coordination',
+            'Complete EMR & Clinical Notes',
             'Advanced Pharmacy Inventory',
-            'Full Laboratory Suite',
-            'EMR & Progress Notes',
-            'Pharmacy POS Integration',
-            '24/7 Priority Support',
+            'Fiscal Ledger & Accounting',
+            'Commercial Usage License',
+            'Priority 24/7 Clinical Support',
         ],
         cta: 'Get Started Now',
         popular: true,
@@ -39,11 +39,11 @@ const tiers = [
         price: 'Custom',
         description: 'Tailored solutions for medical chains and large networks.',
         features: [
-            'Multiple Branch Management',
-            'Centralized Inventory',
-            'Advanced BI & Analytics',
-            'Custom Deployment (Cloud/On-prem)',
-            'Dedicated Account Manager',
+            'Multi-Hospital Management',
+            'Centralized Stock Control',
+            'Advanced Financial Analytics',
+            'Proprietary Enterprise License',
+            'Dedicated Account Engineer',
         ],
         cta: 'Contact Sales',
         popular: false,
@@ -57,10 +57,10 @@ export function LandingPricing() {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-100/20 to-transparent blur-[160px]" />
 
             <div className="max-w-7xl mx-auto px-10 relative z-10">
-                <div className="text-center max-w-5xl mx-auto mb-10 space-y-2">
-                    <h2 className="text-[7.5px] font-black uppercase tracking-[0.4em] text-emerald-600 font-fira-code">Elastic Scalability</h2>
-                    <p className="text-xl lg:text-2xl font-black text-slate-900 tracking-tighter uppercase whitespace-nowrap">Infrastructure Architected for <span className="text-emerald-950">Growth</span></p>
-                    <p className="text-[11px] text-slate-400 font-bold tracking-tight">Transparent clinical licensing. Optimized for the modern medical ecosystem.</p>
+                <div className="text-center max-w-5xl mx-auto mb-16 space-y-4">
+                    <h2 className="text-[8px] font-black uppercase tracking-[0.4em] text-emerald-600 font-fira-code">Elastic Scalability</h2>
+                    <p className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">Architected for <span className="text-emerald-950">Growth</span></p>
+                    <p className="text-base text-slate-400 font-bold tracking-tight">Transparent clinical licensing. Optimized for modern healthcare networks.</p>
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-6 items-end">
@@ -134,7 +134,7 @@ export function LandingPricing() {
                 <div className="mt-8 grid md:grid-cols-3 gap-6 py-6 border-y border-emerald-100/50">
                     <div className="flex items-center gap-3 group">
                         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md shadow-emerald-500/5 border border-emerald-50 group-hover:rotate-6 transition-transform">
-                             <ShieldCheck className="text-emerald-600" size={20} />
+                            <ShieldCheck className="text-emerald-600" size={20} />
                         </div>
                         <div>
                             <p className="text-[9px] font-black uppercase tracking-widest text-slate-900 font-fira-code">Bank-Grade Ops</p>
@@ -143,7 +143,7 @@ export function LandingPricing() {
                     </div>
                     <div className="flex items-center gap-3 group">
                         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md shadow-emerald-500/5 border border-emerald-50 group-hover:rotate-6 transition-transform">
-                             <Check className="text-emerald-600" size={20} />
+                            <Check className="text-emerald-600" size={20} />
                         </div>
                         <div>
                             <p className="text-[9px] font-black uppercase tracking-widest text-slate-900 font-fira-code">GST Ready</p>
@@ -153,6 +153,27 @@ export function LandingPricing() {
                     <div className="flex items-center justify-center md:justify-end gap-3 italic">
                         <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest font-fira-code whitespace-nowrap">Excl. 18% Statutory GST</p>
                     </div>
+                </div>
+
+                {/* Custom Connect Section */}
+                <div className="mt-12 p-8 lg:p-12 bg-white/40 backdrop-blur-3xl rounded-[40px] border border-emerald-100/50 shadow-2xl shadow-emerald-500/5 flex flex-col md:flex-row items-center justify-between gap-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                    <div className="space-y-4 text-center md:text-left">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-100">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-emerald-700 font-fira-code">Custom Clinical Requirements</span>
+                        </div>
+                        <h3 className="text-2xl lg:text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">Need a bespoke <span className="text-emerald-600">Configuration</span>?</h3>
+                        <p className="text-sm text-slate-500 font-bold max-w-xl leading-relaxed tracking-tight">
+                            From specialized medical branch nodes to custom diagnostic pipelines, our engineering team is ready to architect your unique hospital ecosystem.
+                        </p>
+                    </div>
+                    <Link
+                        href="#contact"
+                        className="group flex items-center gap-3 px-10 py-5 bg-emerald-950 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.25em] shadow-2xl shadow-emerald-950/20 hover:bg-emerald-900 hover:-translate-y-1 transition-all duration-500 font-fira-code whitespace-nowrap shrink-0"
+                    >
+                        Connect With Us
+                        <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    </Link>
                 </div>
             </div>
         </section>

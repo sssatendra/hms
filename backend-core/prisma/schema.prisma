@@ -910,7 +910,7 @@ model BedAdmission {
 model Invoice {
   id              String        @id @default(uuid())
   tenant_id       String
-  patient_id      String
+  patient_id      String?
   appointment_id  String?
   invoice_number  String
   status          InvoiceStatus @default(PENDING)
@@ -931,7 +931,7 @@ model Invoice {
   updated_at      DateTime      @updatedAt
 
   tenant          Tenant         @relation(fields: [tenant_id], references: [id])
-  patient         Patient        @relation(fields: [patient_id], references: [id])
+  patient         Patient?        @relation(fields: [patient_id], references: [id])
   appointment     Appointment?   @relation(fields: [appointment_id], references: [id])
   insurance_claim InsuranceClaim?
   items           InvoiceItem[]

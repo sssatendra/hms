@@ -144,7 +144,7 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                 <body>
                     <div class="header">
                         <div>
-                            <div class="hospital-name">HMS Laboratory</div>
+                            <div class="hospital-name">MedOrbit Laboratory</div>
                             <div class="report-title">Diagnostic Investigation Report</div>
                         </div>
                         <div style="text-align: right">
@@ -201,7 +201,7 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                     </div>
 
                     <div class="footer">
-                        <div>HMS Health Information Systems</div>
+                        <div>MedOrbit Health Information Systems</div>
                         <div>Generated on ${new Date().toLocaleString()}</div>
                     </div>
 
@@ -280,11 +280,11 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                                     <span className={cn(
                                         "text-[9px] font-black uppercase px-2 py-0.5 rounded-full border tracking-widest flex items-center gap-1.5",
                                         {
-                                            'bg-yellow-50 text-yellow-700 border-yellow-200': status === 'PENDING',
-                                            'bg-blue-50 text-blue-700 border-blue-200': status === 'SAMPLE_COLLECTED',
-                                            'bg-purple-50 text-purple-700 border-purple-200': status === 'IN_PROGRESS',
-                                            'bg-emerald-50 text-emerald-700 border-emerald-200': status === 'COMPLETED',
-                                            'bg-red-50 text-red-700 border-red-200': status === 'CANCELLED',
+                                            'bg-yellow-500/10 text-yellow-500 border-yellow-500/20': status === 'PENDING',
+                                            'bg-sky-500/10 text-sky-500 border-sky-500/20': status === 'SAMPLE_COLLECTED',
+                                            'bg-purple-500/10 text-purple-500 border-purple-500/20': status === 'IN_PROGRESS',
+                                            'bg-emerald-500/10 text-emerald-500 border-emerald-500/20': status === 'COMPLETED',
+                                            'bg-rose-500/10 text-rose-500 border-rose-500/20': status === 'CANCELLED',
                                         }
                                     )}>
                                         {getStatusIcon(status)}
@@ -297,7 +297,7 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={printReport}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-border rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-muted transition-all font-fira-code"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-card border border-border rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-muted transition-all font-fira-code text-foreground"
                             >
                                 <FileText className="h-3.5 w-3.5 text-primary" />
                                 Extract Report
@@ -332,9 +332,9 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
 
                             {/* Attached Artifacts - Elevated for Completed Reports */}
                             {data.files?.length > 0 && (
-                                <div className="p-4 bg-emerald-50/20 rounded-2xl border border-emerald-100/50">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 mb-3 px-1 font-fira-code text-emerald-800">
-                                        <FileText className="h-3.5 w-3.5 text-emerald-600" />
+                                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 mb-3 px-1 font-fira-code text-primary">
+                                        <FileText className="h-3.5 w-3.5 text-primary" />
                                         Imaging & Diagnostic Artifacts
                                     </h3>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
@@ -342,14 +342,14 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                                             <div
                                                 key={file.id}
                                                 onClick={() => setActiveFileId(file.id)}
-                                                className="relative aspect-square bg-white border border-emerald-100 rounded-xl flex flex-col items-center justify-center p-3 group cursor-pointer hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/5 transition-all overflow-hidden"
+                                                className="relative aspect-square bg-card border border-border rounded-xl flex flex-col items-center justify-center p-3 group cursor-pointer hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all overflow-hidden"
                                             >
-                                                <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-1 group-hover:scale-105 transition-transform text-emerald-600">
+                                                <div className="w-8 h-8 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-center mb-1 group-hover:scale-105 transition-transform text-primary">
                                                     {file.file_type === 'PDF' ? <FileText className="h-4 w-4" /> : <Microscope className="h-4 w-4" />}
                                                 </div>
-                                                <p className="text-[8px] font-black uppercase tracking-tighter text-center truncate w-full font-fira-code px-1 text-slate-600">{file.file_name}</p>
-                                                <div className="absolute top-1.5 right-1.5 p-1 bg-emerald-600/10 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Maximize2 className="h-2.5 w-2.5 text-emerald-600" />
+                                                <p className="text-[8px] font-black uppercase tracking-tighter text-center truncate w-full font-fira-code px-1 text-foreground/70">{file.file_name}</p>
+                                                <div className="absolute top-1.5 right-1.5 p-1 bg-primary/10 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Maximize2 className="h-2.5 w-2.5 text-primary" />
                                                 </div>
                                             </div>
                                         ))}
@@ -368,9 +368,9 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                                         <button
                                             onClick={saveResults}
                                             disabled={updateResultsMutation.isPending}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all font-fira-code"
+                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:opacity-95 transition-all font-fira-code shadow-lg shadow-emerald-500/10 active:scale-95"
                                         >
-                                            {updateResultsMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                                            {updateResultsMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin text-white" /> : <Save className="h-3 w-3 text-white" />}
                                             Sync Results
                                         </button>
                                     )}
@@ -395,7 +395,7 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                                                     {status !== 'COMPLETED' && status !== 'CANCELLED' && item.status !== 'COMPLETED' && (
                                                         <button
                                                             onClick={() => submitSingleItem(item.id)}
-                                                            className="h-7 px-3 bg-emerald-600 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center gap-1 active:scale-95 shadow-lg shadow-emerald-500/10"
+                                                            className="h-7 px-3 bg-primary text-primary-foreground rounded-lg text-[8px] font-black uppercase tracking-widest opacity-90 hover:opacity-100 transition-all flex items-center gap-1 active:scale-95 shadow-lg shadow-primary/10"
                                                         >
                                                             <CheckCircle size={10} />
                                                             Submit
@@ -413,8 +413,8 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                                                         placeholder="Qualitative finding..."
                                                         readOnly={status === 'COMPLETED'}
                                                         className={cn(
-                                                            "w-full px-2.5 py-1.5 bg-muted/10 border border-border rounded-lg text-xs font-bold outline-none focus:border-primary transition-all",
-                                                            status === 'COMPLETED' && "bg-emerald-50/10 border-emerald-100 opacity-80 cursor-not-allowed"
+                                                            "w-full px-2.5 py-1.5 bg-muted/10 border border-border rounded-lg text-xs font-bold outline-none focus:border-primary transition-all text-foreground",
+                                                            status === 'COMPLETED' && "bg-emerald-500/5 border-emerald-500/20 opacity-80 cursor-not-allowed text-emerald-500"
                                                         )}
                                                     />
                                                 </div>
@@ -427,8 +427,8 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                                                         placeholder="Clinical remarks..."
                                                         readOnly={status === 'COMPLETED'}
                                                         className={cn(
-                                                            "w-full px-2.5 py-1.5 bg-muted/10 border border-border rounded-lg text-xs font-bold outline-none focus:border-primary transition-all",
-                                                            status === 'COMPLETED' && "bg-emerald-50/10 border-emerald-100 opacity-80 cursor-not-allowed"
+                                                            "w-full px-2.5 py-1.5 bg-muted/40 border border-border rounded-lg text-xs font-bold outline-none focus:border-primary transition-all text-foreground",
+                                                            status === 'COMPLETED' && "bg-transparent border-border/50 opacity-80 cursor-not-allowed"
                                                         )}
                                                     />
                                                 </div>
@@ -459,7 +459,7 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                                             className={cn(
                                                 "w-full flex items-center justify-between p-3 px-4 rounded-xl border transition-all",
                                                 status === action.activeWhen
-                                                    ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-md shadow-emerald-500/5"
+                                                    ? "border-primary bg-primary/10 text-primary shadow-md shadow-primary/5"
                                                     : "border-border text-muted-foreground opacity-30 grayscale pointer-events-none"
                                             )}
                                         >
@@ -474,16 +474,16 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                             </div>
 
                             {/* Instructions / Clinical Context */}
-                            <div className="bg-amber-50/50 rounded-xl p-4 border border-amber-100 flex flex-col gap-3">
+                            <div className="bg-amber-500/5 rounded-xl p-4 border border-amber-500/20 flex flex-col gap-3">
                                 <div className="flex items-start gap-3">
-                                    <AlertCircle className="h-3.5 w-3.5 text-amber-600 mt-0.5" />
+                                    <AlertCircle className="h-3.5 w-3.5 text-amber-500 mt-0.5" />
                                     <div className="flex-1">
                                         <div className="flex items-center justify-between mb-1.5">
-                                            <p className="text-[9px] font-black uppercase tracking-widest text-amber-900 font-fira-code">Clinical Frame</p>
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-amber-500 font-fira-code">Clinical Frame</p>
                                             {status !== 'COMPLETED' && status !== 'CANCELLED' && (
                                                 <button
                                                     onClick={() => updateResultsMutation.mutate({ clinical_notes: clinicalNotes })}
-                                                    className="px-2 py-0.5 bg-amber-600 text-white rounded text-[8.5px] font-black uppercase tracking-widest hover:bg-amber-700 transition-all shadow-sm"
+                                                    className="px-2 py-0.5 bg-amber-500 text-white rounded text-[8.5px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all shadow-sm"
                                                 >
                                                     Save Insights
                                                 </button>
@@ -495,7 +495,7 @@ export default function LabOrderDetailModal({ orderId, onClose }: LabOrderDetail
                                             readOnly={status === 'COMPLETED'}
                                             placeholder="Add contextual insights here..."
                                             className={cn(
-                                                "w-full bg-white/50 border border-amber-200 rounded-lg p-2 text-[10px] font-medium text-amber-900 outline-none focus:border-amber-400 min-h-[80px] resize-none transition-all placeholder:text-amber-900/40",
+                                                "w-full bg-card/50 border border-amber-500/20 rounded-lg p-2 text-[10px] font-medium text-foreground outline-none focus:border-amber-500/40 min-h-[80px] resize-none transition-all placeholder:text-muted-foreground/30",
                                                 status === 'COMPLETED' && "bg-transparent border-transparent cursor-default italic px-0 py-0"
                                             )}
                                         />

@@ -1,3 +1,5 @@
+import http from 'http';
+import { Server } from 'socket.io';
 import { createApp } from './app';
 import { config } from './config';
 import { logger } from './utils/logger';
@@ -24,7 +26,23 @@ const bootstrap = async (): Promise<void> => {
 
     // Create and start HTTP server
     const app = createApp();
-    const server = app.listen(config.port, () => {
+    const server = http.createServer(app);
+
+    const io = new Server(server, {
+      cors: {
+        origin: config.services.frontendUrl,
+        credentials: true
+      }
+    });
+
+    (global as any).io = io;
+
+    io.on('connection', (socket: any) => {
+      logger.info(`🔌 New socket connection: ${socket.id}`);
+      socket.on('disconnect', () => logger.info(`🔌 Socket disconnected: ${socket.id}`));
+    });
+
+    server.listen(config.port, () => {
       logger.info(`✅ HMS Core Service running on port ${config.port}`);
       logger.info(`📚 API Base: http://localhost:${config.port}/api/v1`);
       logger.info(`❤️  Health: http://localhost:${config.port}/health`);

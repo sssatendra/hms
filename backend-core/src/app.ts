@@ -23,6 +23,7 @@ import wardsRoutes from './modules/wards/wards.routes';
 import inventoryRoutes from './modules/inventory/inventory.routes';
 import accountingRoutes from './modules/accounting/accounting.routes';
 import tenantsRoutes from './modules/tenants/tenants.routes';
+import searchRoutes from './modules/search/search.routes';
 
 export const createApp = (): Application => {
   const app = express();
@@ -112,6 +113,7 @@ export const createApp = (): Application => {
   app.use('/api/v1/inventory', tenantMiddleware, inventoryRoutes);
   app.use('/api/v1/accounting', tenantMiddleware, accountingRoutes);
   app.use('/api/v1/tenants', tenantMiddleware, tenantsRoutes);
+  app.use('/api/v1/search', tenantMiddleware, searchRoutes);
 
   // ─── 404 Handler ───────────────────────────────────────────────────────────
   app.use((req: Request, res: Response) => {

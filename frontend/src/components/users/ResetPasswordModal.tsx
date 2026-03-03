@@ -43,11 +43,11 @@ export default function ResetPasswordModal({ user, onClose }: ResetPasswordModal
     });
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-in fade-in duration-200">
             <div className="bg-card w-full max-w-md rounded-2xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-200">
-                <div className="p-6 border-b border-border bg-rose-500/[0.03] flex justify-between items-center">
+                <div className="p-6 border-b border-border bg-rose-500/[0.03] flex justify-between items-center text-foreground">
                     <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
+                        <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
                             <KeyRound size={20} />
                         </div>
                         <div>
@@ -65,8 +65,8 @@ export default function ResetPasswordModal({ user, onClose }: ResetPasswordModal
                 </div>
 
                 <div className="p-6 bg-amber-500/5 flex gap-3">
-                    <ShieldAlert size={20} className="text-amber-600 shrink-0" />
-                    <p className="text-[10px] font-bold text-amber-700 leading-relaxed uppercase tracking-tighter">
+                    <ShieldAlert size={20} className="text-amber-500 shrink-0" />
+                    <p className="text-[10px] font-bold text-amber-500 leading-relaxed uppercase tracking-tighter opacity-80">
                         Important: You are resetting the login password for this staff member. Please make sure the staff member is verified.
                     </p>
                 </div>

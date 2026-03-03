@@ -78,7 +78,7 @@ export default function RegisterPage() {
                         </div>
                     </div>
                     <h1 className="text-3xl font-black text-[#164E63] tracking-tight font-heading uppercase italic">
-                        HMS <span className="text-[#0891B2] not-italic">PRIME</span>
+                        MedOrbit <span className="text-[#0891B2] not-italic">PRIME</span>
                     </h1>
                     <p className="text-[#164E63]/60 mt-1 font-bold tracking-widest uppercase text-[9px]">
                         Launch Your Clinical Workspace

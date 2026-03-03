@@ -14,7 +14,7 @@ export function LandingFooter() {
                                 <Building2 className="text-emerald-50" size={22} />
                             </div>
                             <div>
-                                <span className="text-lg font-black tracking-tighter text-slate-900 uppercase">HMS</span>
+                                <span className="text-lg font-black tracking-tighter text-slate-900 uppercase">MedOrbit</span>
                                 <span className="text-[8px] block font-black uppercase tracking-[0.3em] text-emerald-600 -mt-1 font-fira-code">Protocol v4.0</span>
                             </div>
                         </Link>
@@ -44,7 +44,7 @@ export function LandingFooter() {
                     <div>
                         <h4 className="text-[8px] font-black uppercase tracking-[0.3em] text-emerald-600 mb-5 font-fira-code">Ecosystem</h4>
                         <ul className="space-y-2.5">
-                            {['About HMS', 'Interrogations', 'Careers', 'Privacy Layer', 'Compliance'].map(item => (
+                            {['About MedOrbit', 'Interrogations', 'Careers', 'Privacy Layer', 'Compliance'].map(item => (
                                 <li key={item}>
                                     <Link href="#" className="text-[12px] font-semibold text-slate-500 hover:text-emerald-600 transition-colors tracking-tight">{item}</Link>
                                 </li>
@@ -59,7 +59,7 @@ export function LandingFooter() {
                                 <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all"><Phone size={14} /></div>
                                 <div>
                                     <p className="text-[7.5px] font-black uppercase tracking-widest text-slate-300 mb-0.5 font-fira-code">Central Exchange</p>
-                                    <p className="text-[12px] font-black text-slate-700 tracking-tight font-fira-sans">+91 1800-HMS-CORE</p>
+                                    <p className="text-[12px] font-black text-slate-700 tracking-tight font-fira-sans">+91 1800-MED-ORBIT</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-3 group">
@@ -75,7 +75,7 @@ export function LandingFooter() {
 
                 <div className="pt-6 border-t border-emerald-100 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-300 font-fira-code">
-                        © 2026 HMS CLINICAL SYSTEMS. ALL NODES OPERATIONAL.
+                        © 2026 MedOrbit CLINICAL SYSTEMS. ALL NODES OPERATIONAL.
                     </p>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 opacity-20 grayscale hover:grayscale-0 transition-all cursor-crosshair">
